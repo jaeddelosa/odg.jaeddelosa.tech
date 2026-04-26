@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenDataGateway — Open Database Directory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --surface: #0e1419;
+    --surface2: #141c24;
+    --surface3: #1a2535;
+    --border: #1e2d3d;
+    --border2: #243344;
+    --accent: #00d4ff;
+    --accent2: #0099cc;
+    --accent3: #00ff88;
+    --accent4: #ff6b35;
+    --text: #e2eaf4;
+    --text2: #8ca0b8;
+    --text3: #4a6070;
+    --tag-bg: #0d1f2d;
+    --glow: rgba(0,212,255,0.15);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(8,12,16,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+  }
+
+  .header-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    height: 64px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #080c10;
+  }
+
+  .logo-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span { color: var(--accent); }
+
+  .header-stats {
+    display: flex;
+    gap: 24px;
+    margin-left: auto;
+  }
+
+  .stat-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stat-pill strong {
+    color: var(--accent);
+    font-size: 13px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    padding: 56px 32px 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .hero-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hero-label::before {
+    content:'';
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-size: clamp(32px, 5vw, 58px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+  }
+
+  h1 em {
+    font-style: normal;
+    color: var(--accent);
+    -webkit-text-stroke: 1px var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 15px;
+    color: var(--text2);
+    max-width: 560px;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    font-weight: 400;
+  }
+
+  /* ── SEARCH + FILTERS ── */
+  .controls {
+    position: relative;
+    z-index: 50;
+    padding: 0 32px 32px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 280px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 16px;
+  }
+
+  #searchInput {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    padding: 13px 16px 13px 44px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #searchInput:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--glow);
+  }
+
+  #searchInput::placeholder { color: var(--text3); }
+
+  /* Dropdowns */
+  .dropdown-wrap {
+    position: relative;
+  }
+
+  .dropdown-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 13px 40px 13px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    position: relative;
+    transition: border-color 0.2s, background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 160px;
+  }
+
+  .dropdown-btn:hover, .dropdown-btn.active {
+    border-color: var(--accent);
+    background: var(--surface3);
+  }
+
+  .dropdown-btn::after {
+    content: '▾';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text2);
+    font-size: 11px;
+    transition: transform 0.2s;
+  }
+
+  .dropdown-btn.active::after { transform: translateY(-50%) rotate(180deg); }
+
+  .dropdown-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 240px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 8px;
+    display: none;
+    z-index: 200;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,212,255,0.08);
+    animation: dropIn 0.18s ease;
+  }
+
+  @keyframes dropIn {
+    from { opacity:0; transform: translateY(-8px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  .dropdown-panel.open { display: block; }
+
+  .dropdown-panel label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text2);
+    transition: background 0.15s, color 0.15s;
+    font-weight: 500;
+  }
+
+  .dropdown-panel label:hover { background: var(--surface3); color: var(--text); }
+
+  .dropdown-panel label input[type=checkbox] { display:none; }
+
+  .cb-box {
+    width: 16px; height: 16px;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex; align-items:center; justify-content:center;
+    transition: background 0.15s, border-color 0.15s;
+    font-size: 10px;
+  }
+
+  .dropdown-panel label input:checked + .cb-box {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #080c10;
+  }
+
+  .dropdown-section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 8px 10px 4px;
+  }
+
+  .filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .filter-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    background: var(--tag-bg);
+    border: 1px solid var(--accent2);
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .filter-tag:hover { background: rgba(0,212,255,0.1); }
+  .filter-tag .remove { font-size: 14px; line-height: 1; }
+
+  /* Results bar */
+  .results-bar {
+    padding: 0 32px 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .results-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  .results-count strong { color: var(--accent); }
+
+  .sort-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .sort-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .sort-btn.active, .sort-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--tag-bg);
+  }
+
+  /* ── GRID ── */
+  .grid {
+    position: relative;
+    z-index: 1;
+    padding: 0 32px 80px;
+    max-width: 1600px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(16px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  .card::before {
+    content:'';
+    position: absolute;
+    top:0; left:0; right:0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-cat, var(--accent)), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .card:hover {
+    border-color: var(--border2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,212,255,0.06);
+  }
+
+  .card:hover::before { opacity:1; }
+
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .card-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .card-title-group { flex: 1; min-width: 0; }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.3px;
+  }
+
+  .card-org {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .card-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+
+  .card-desc {
+    font-size: 12.5px;
+    color: var(--text2);
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--surface3);
+    color: var(--text3);
+    border: 1px solid var(--border);
+  }
+
+  .card-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .card-link:hover {
+    background: var(--tag-bg);
+    border-color: var(--accent);
+  }
+
+  /* Category colors */
+  .cat-government    { --accent-cat:#4fc3f7; }
+  .cat-science       { --accent-cat:#81c784; }
+  .cat-health        { --accent-cat:#f48fb1; }
+  .cat-economics     { --accent-cat:#ffb74d; }
+  .cat-environment   { --accent-cat:#80cbc4; }
+  .cat-technology    { --accent-cat:#ce93d8; }
+  .cat-social        { --accent-cat:#90caf9; }
+  .cat-geospatial    { --accent-cat:#a5d6a7; }
+  .cat-education     { --accent-cat:#fff176; }
+  .cat-transport     { --accent-cat:#ffcc02; }
+  .cat-energy        { --accent-cat:#ff8a65; }
+  .cat-legal         { --accent-cat:#bcaaa4; }
+  .cat-media         { --accent-cat:#ef9a9a; }
+  .cat-humanitarian  { --accent-cat:#f0a500; }
+
+  .badge-free  { background: rgba(0,255,136,0.12); color: #00ff88; border:1px solid rgba(0,255,136,0.2); }
+  .badge-api   { background: rgba(0,212,255,0.12); color: var(--accent); border:1px solid rgba(0,212,255,0.2); }
+  .badge-bulk  { background: rgba(255,107,53,0.12); color: #ff6b35; border:1px solid rgba(255,107,53,0.2); }
+
+  /* Icons bg per category */
+  .icon-government  { background: rgba(79,195,247,0.12); }
+  .icon-science     { background: rgba(129,199,132,0.12); }
+  .icon-health      { background: rgba(244,143,177,0.12); }
+  .icon-economics   { background: rgba(255,183,77,0.12); }
+  .icon-environment { background: rgba(128,203,196,0.12); }
+  .icon-technology  { background: rgba(206,147,216,0.12); }
+  .icon-social      { background: rgba(144,202,249,0.12); }
+  .icon-geospatial  { background: rgba(165,214,167,0.12); }
+  .icon-education   { background: rgba(255,241,118,0.12); }
+  .icon-transport   { background: rgba(255,204,2,0.12); }
+  .icon-energy      { background: rgba(255,138,101,0.12); }
+  .icon-legal       { background: rgba(188,170,164,0.12); }
+  .icon-media       { background: rgba(239,154,154,0.12); }
+  .icon-humanitarian{ background: rgba(240,165,0,0.12); }
+
+  /* No results */
+  .empty {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text3);
+  }
+
+  .empty h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: var(--text2);
+  }
+
+  /* Category sidebar pills */
+  .cat-pills {
+    position: relative;
+    z-index: 1;
+    padding: 0 32px 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .cat-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .cat-pill:hover { border-color: var(--accent); color: var(--text); }
+  .cat-pill.active { background: var(--tag-bg); border-color: var(--accent); color: var(--accent); }
+
+  .cat-pill .count {
+    background: var(--surface3);
+    padding: 1px 6px;
+    border-radius: 100px;
+    font-size: 10px;
+    color: var(--text3);
+  }
+
+  .cat-pill.active .count { color: var(--accent2); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius:3px; }
+
+  @media (max-width:640px) {
+    header, .hero, .controls, .results-bar, .cat-pills, .grid { padding-left:16px; padding-right:16px; }
+    .grid { grid-template-columns: 1fr; }
+    .header-stats { display:none; }
+  }
+
+
+  /* ── AUTH GATE ── */
+  #appContent { display: none; }
+
+  .auth-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .auth-gate::before {
+    content:'';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .auth-gate::after {
+    content: '';
+    position: absolute;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(0,212,255,0.07) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .auth-card {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 48px 44px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,212,255,0.06);
+    animation: gateIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  @keyframes gateIn {
+    from { opacity:0; transform: translateY(24px) scale(0.97); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .auth-card-logo {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 36px;
+  }
+  .auth-card-logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items:center; justify-content:center;
+    font-size: 18px; font-weight: 700; color: #080c10;
+  }
+  .auth-card-logo-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 16px; font-weight: 700; color: var(--text);
+  }
+  .auth-card-logo-text span { color: var(--accent); }
+  .auth-card h1 {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.8px;
+    margin-bottom: 10px; line-height: 1.2;
+  }
+  .auth-card h1 em { font-style:normal; color: var(--accent); }
+  .auth-card-sub {
+    font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 28px;
+  }
+  .auth-features {
+    display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px;
+  }
+  .auth-feature {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; color: var(--text2);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .auth-feature-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent3); flex-shrink: 0;
+  }
+  .google-btn {
+    width: 100%;
+    display: flex; align-items:center; justify-content:center; gap: 12px;
+    background: #fff; border: none; border-radius: 12px;
+    padding: 15px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: #1a1a1a; cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .google-btn:hover { background: #f5f5f5; box-shadow: 0 6px 24px rgba(0,0,0,0.4); transform: translateY(-1px); }
+  .google-btn:active { transform: translateY(0); }
+  .google-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .auth-terms {
+    font-size: 11px; color: var(--text3);
+    text-align: center; margin-top: 18px; line-height: 1.6;
+  }
+  .auth-error {
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    color: #ff8a8a;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 10px 14px; border-radius: 8px;
+    margin-bottom: 16px; display: none;
+  }
+  .auth-error.show { display: block; }
+  .auth-loading {
+    display: none; align-items:center; justify-content:center; gap: 10px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text2);
+    padding: 12px;
+  }
+  .auth-loading.show { display: flex; }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border2); border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── AUTH BUTTON ── */
+  .auth-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .auth-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--tag-bg);
+  }
+
+  .user-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent);
+  }
+  .user-avatar-placeholder {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    display: flex; align-items:center; justify-content:center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #080c10;
+    flex-shrink: 0;
+  }
+
+  .user-menu-wrap {
+    position: relative;
+  }
+  .user-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 6px 12px 6px 6px;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    transition: border-color 0.2s;
+  }
+  .user-menu-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  .user-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 8px;
+    display: none;
+    z-index: 300;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .user-dropdown.open { display: block; }
+  .user-dropdown-info {
+    padding: 8px 10px 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 6px;
+  }
+  .user-dropdown-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .user-dropdown-email {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+  }
+  .user-dropdown-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--text2);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .user-dropdown-btn:hover { background: var(--surface3); color: var(--text); }
+  .user-dropdown-btn.danger:hover { color: #ff6b6b; background: rgba(255,107,107,0.08); }
+
+  /* ── AUTH MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 0 1px rgba(0,212,255,0.08);
+    animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn {
+    from { opacity:0; transform: translateY(20px) scale(0.97); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: transparent;
+    border: none;
+    color: var(--text3);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .modal-close:hover { color: var(--text); background: var(--surface2); }
+
+  .modal-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .modal-logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items:center; justify-content:center;
+    font-size: 16px; font-weight: 700; color: #080c10;
+  }
+  .modal-logo-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .modal-logo-text span { color: var(--accent); }
+
+  .modal h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .modal-sub {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .google-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  .google-btn:hover { background: #f5f5f5; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transform: translateY(-1px); }
+  .google-btn:active { transform: translateY(0); }
+  .google-btn svg { flex-shrink: 0; }
+
+  .modal-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .modal-divider::before, .modal-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .modal-divider span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .modal-terms {
+    font-size: 11px;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 20px;
+    line-height: 1.6;
+  }
+
+  .auth-error {
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    color: #ff8a8a;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .auth-error.show { display: block; }
+
+  .auth-loading {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    padding: 12px;
+  }
+  .auth-loading.show { display: flex; }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .welcome-banner {
+    background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,255,136,0.06));
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .welcome-banner.show { display: flex; }
+  .welcome-banner strong { color: var(--text); }
+
+  /* ── AUTH TABS ── */
+  .auth-tabs {
+    display: flex;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 24px;
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text3);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+  }
+  .auth-tab.active {
+    background: var(--surface3);
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .auth-tab:hover:not(.active) { color: var(--text2); }
+
+  .auth-new-user {
+    font-size: 12px;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 14px;
+  }
+  .auth-new-user a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .auth-new-user a:hover { text-decoration: underline; }
+
+  /* ── EMAIL FORM FIELDS ── */
+  .auth-field {
+    margin-bottom: 12px;
+  }
+  .auth-label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+  }
+  .auth-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 11px 14px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+  }
+  .auth-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.12);
+  }
+  .auth-input::placeholder { color: var(--text3); }
+
+  .auth-submit-btn {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    padding: 13px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #080c10;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 2px 12px rgba(0,212,255,0.25);
+    margin-top: 4px;
+  }
+  .auth-submit-btn:hover {
+    background: #00bfe8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0,212,255,0.35);
+  }
+  .auth-submit-btn:active { transform: translateY(0); }
+
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .auth-divider span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .auth-switch-note {
+    font-size: 12px;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 14px;
+  }
+  .auth-switch-note a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .auth-switch-note a:hover { text-decoration: underline; }
+
+</style>
+</head>
+<body>
+
+<!-- AUTH GATE: shown until user signs in -->
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+
+    <div class="auth-card-logo">
+      <div class="auth-card-logo-icon">&#x2B21;</div>
+      <span class="auth-card-logo-text">Open<span>Data</span>Gateway</span>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabSignIn" onclick="switchTab('signin')">Sign In</button>
+      <button class="auth-tab"        id="tabSignUp" onclick="switchTab('signup')">Create Account</button>
+    </div>
+
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-loading" id="authLoading">
+      <div class="spinner"></div>
+      <span id="authLoadingMsg">Please wait&hellip;</span>
+    </div>
+
+    <!-- ── SIGN IN PANEL ── -->
+    <div id="panelSignIn">
+      <p class="auth-card-sub">Welcome back. Sign in to access 320+ open databases.</p>
+
+      <button class="google-btn" id="googleSignInBtn" onclick="handleGoogleAuth()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        Sign in with Google
+      </button>
+
+      <div class="auth-divider"><span>or sign in with email</span></div>
+
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="siEmail" type="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="siPassword" type="password" placeholder="Your password" autocomplete="current-password">
+      </div>
+      <button class="auth-submit-btn" onclick="handleEmailSignIn()">Sign In</button>
+
+      <p class="auth-switch-note">No account? <a href="#" onclick="switchTab('signup');return false;">Create one free</a></p>
+    </div>
+
+    <!-- ── SIGN UP PANEL ── -->
+    <div id="panelSignUp" style="display:none;">
+      <p class="auth-card-sub">Create a free account. No credit card needed.</p>
+
+      <button class="google-btn" id="googleSignUpBtn" onclick="handleGoogleAuth()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        Sign up with Google
+      </button>
+
+      <div class="auth-divider"><span>or sign up with email</span></div>
+
+      <div class="auth-field">
+        <label class="auth-label">Full Name</label>
+        <input class="auth-input" id="suName" type="text" placeholder="Your name" autocomplete="name">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="suEmail" type="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Password <span style="color:var(--text3);font-weight:400;">(min. 6 characters)</span></label>
+        <input class="auth-input" id="suPassword" type="password" placeholder="Choose a password" autocomplete="new-password">
+      </div>
+      <button class="auth-submit-btn" onclick="handleEmailSignUp()">Create Account</button>
+
+      <p class="auth-switch-note">Already have an account? <a href="#" onclick="switchTab('signin');return false;">Sign in</a></p>
+    </div>
+
+    <p class="auth-terms">By continuing you agree to our Terms of Service and Privacy Policy.</p>
+  </div>
+</div>
+
+<!-- APP CONTENT: hidden until authenticated -->
+<div id="appContent">
+
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <div class="logo-icon">⬡</div>
+      <span class="logo-text">Open<span>Data</span>Gateway</span>
+    </a>
+    <div class="header-stats">
+      <div class="stat-pill"><strong id="totalCount">—</strong> Databases</div>
+      <div class="stat-pill"><strong id="catCount">—</strong> Categories</div>
+      <div class="stat-pill"><strong>100%</strong> Free</div>
+    </div>
+
+    <button class="auth-btn" id="signInBtn" onclick="openAuthModal()" style="margin-left:auto;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Sign In
+    </button>
+
+    <div class="user-menu-wrap" id="userMenuWrap" style="display:none; margin-left:auto;">
+      <button class="user-menu-btn" onclick="toggleUserMenu()">
+        <div class="user-avatar-placeholder" id="userAvatarPlaceholder">?</div>
+        <img id="userAvatarImg" class="user-avatar" style="display:none;" alt="avatar">
+        <span id="userDisplayName" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+        <span style="color:var(--text3); font-size:10px;">&#9662;</span>
+      </button>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-info">
+          <div class="user-dropdown-name" id="dropdownName"></div>
+          <div class="user-dropdown-email" id="dropdownEmail"></div>
+        </div>
+        <button class="user-dropdown-btn danger" onclick="signOutUser()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<section class="hero">
+  <div class="hero-label">Open Data Directory</div>
+  <h1>Every open<br>database, <em>in one place.</em></h1>
+  <p class="hero-sub">A curated directory of 320+ publicly accessible databases across science, government, health, economics, and more — all for free!</p>
+</section>
+
+<div class="controls">
+  <div class="search-row">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input id="searchInput" type="text" placeholder="Search databases, topics, organizations...">
+    </div>
+
+    <div class="dropdown-wrap" id="dd-category">
+      <button class="dropdown-btn" onclick="toggleDropdown('dd-category')">🗂 Category</button>
+      <div class="dropdown-panel" id="panel-dd-category"></div>
+    </div>
+
+    <div class="dropdown-wrap" id="dd-access">
+      <button class="dropdown-btn" onclick="toggleDropdown('dd-access')">🔑 Access Type</button>
+      <div class="dropdown-panel" id="panel-dd-access">
+        <label><input type="checkbox" value="Free" onchange="applyFilters()"> <span class="cb-box">✓</span> Free Download</label>
+        <label><input type="checkbox" value="API" onchange="applyFilters()"> <span class="cb-box">✓</span> API Access</label>
+        <label><input type="checkbox" value="Bulk" onchange="applyFilters()"> <span class="cb-box">✓</span> Bulk Export</label>
+      </div>
+    </div>
+
+    <div class="dropdown-wrap" id="dd-region">
+      <button class="dropdown-btn" onclick="toggleDropdown('dd-region')">🌍 Region</button>
+      <div class="dropdown-panel" id="panel-dd-region">
+        <label><input type="checkbox" value="Global" onchange="applyFilters()"> <span class="cb-box">✓</span> Global</label>
+        <label><input type="checkbox" value="USA" onchange="applyFilters()"> <span class="cb-box">✓</span> United States</label>
+        <label><input type="checkbox" value="Europe" onchange="applyFilters()"> <span class="cb-box">✓</span> Europe</label>
+        <label><input type="checkbox" value="UK" onchange="applyFilters()"> <span class="cb-box">✓</span> United Kingdom</label>
+        <label><input type="checkbox" value="Asia" onchange="applyFilters()"> <span class="cb-box">✓</span> Asia</label>
+        <label><input type="checkbox" value="Intl" onchange="applyFilters()"> <span class="cb-box">✓</span> International Orgs</label>
+      </div>
+    </div>
+
+    <button class="sort-btn active" id="btn-az" onclick="setSort('az')">A–Z</button>
+    <button class="sort-btn" id="btn-cat" onclick="setSort('cat')">By Category</button>
+  </div>
+
+  <div class="filter-tags" id="filterTags"></div>
+</div>
+
+<div class="cat-pills" id="catPills"></div>
+
+<div class="results-bar">
+  <div class="results-count">Showing <strong id="shownCount">320</strong> of <strong id="totalCount2">320</strong> databases</div>
+  <button class="sort-btn" onclick="clearAll()">✕ Clear all filters</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const DATABASES = [
+  // ── GOVERNMENT ──
+  {title:"Data.gov",org:"US Federal Government",category:"Government",icon:"🏛️",desc:"The home of the US Government's open data. Access over 300,000 datasets across agriculture, climate, education, energy, finance, public safety, and more.",url:"https://data.gov",access:"Free",region:"USA",tags:["federal","policy","statistics"]},
+  {title:"data.gov.uk",org:"UK Government",category:"Government",icon:"🏛️",desc:"Official open data portal of the UK government with thousands of datasets covering health, transport, education, crime statistics, and public spending.",url:"https://data.gov.uk",access:"Free",region:"UK",tags:["policy","spending","UK"]},
+  {title:"EU Open Data Portal",org:"European Commission",category:"Government",icon:"🇪🇺",desc:"Official portal providing access to open data published by EU institutions, bodies, offices and agencies. Covers legislation, statistics, and public information.",url:"https://data.europa.eu",access:"Free",region:"Europe",tags:["EU","legislation","statistics"]},
+  {title:"Canada Open Government",org:"Government of Canada",category:"Government",icon:"🍁",desc:"Federal open data from Canada including economic, social, environmental and scientific datasets from dozens of government departments.",url:"https://open.canada.ca",access:"Free",region:"Intl",tags:["canada","federal","statistics"]},
+  {title:"Australia data.gov.au",org:"Australian Government",category:"Government",icon:"🦘",desc:"Australian government's central data portal with thousands of datasets from federal, state and territory agencies.",url:"https://data.gov.au",access:"Free",region:"Asia",tags:["australia","government","statistics"]},
+  {title:"NYC Open Data",org:"City of New York",category:"Government",icon:"🗽",desc:"Free public data published by New York City agencies covering 311 calls, property, crime, subway, health inspections, and more.",url:"https://opendata.cityofnewyork.us",access:"Free",region:"USA",tags:["nyc","city","crime"]},
+  {title:"Chicago Data Portal",org:"City of Chicago",category:"Government",icon:"🏙️",desc:"Datasets published by the City of Chicago covering crimes, buildings, permits, inspections, lobbyists and city operations.",url:"https://data.cityofchicago.org",access:"Free",region:"USA",tags:["chicago","crime","permits"]},
+  {title:"Los Angeles Open Data",org:"City of Los Angeles",category:"Government",icon:"🌴",desc:"LA city open data including crime statistics, street services, Metro ridership, building permits, and business licenses.",url:"https://data.lacity.org",access:"Free",region:"USA",tags:["LA","crime","transit"]},
+  {title:"Open Data DC",org:"DC Government",category:"Government",icon:"🏛️",desc:"Washington DC's open data catalog with datasets on crime, transportation, permits, boundaries, demographics, and city services.",url:"https://opendata.dc.gov",access:"Free",region:"USA",tags:["DC","crime","GIS"]},
+  {title:"San Francisco Open Data",org:"City of San Francisco",category:"Government",icon:"🌁",desc:"SF's open data portal covering police incidents, 311 cases, road closures, film permits, and city employee compensation.",url:"https://datasf.org/opendata",access:"Free",region:"USA",tags:["SF","crime","city"]},
+  {title:"Seattle Open Data",org:"City of Seattle",category:"Government",icon:"☕",desc:"City of Seattle public data covering police reports, traffic, permits, parks, utilities, and budget information.",url:"https://data.seattle.gov",access:"Free",region:"USA",tags:["seattle","police","transit"]},
+  {title:"Boston Open Data",org:"City of Boston",category:"Government",icon:"🦞",desc:"Open data hub for the City of Boston with datasets on restaurants, property assessment, crime, and infrastructure.",url:"https://data.boston.gov",access:"Free",region:"USA",tags:["boston","property","crime"]},
+  {title:"UK ONS Data",org:"Office for National Statistics",category:"Government",icon:"📊",desc:"The UK's national statistical institute providing detailed economic, social, and demographic statistics for the United Kingdom.",url:"https://www.ons.gov.uk/datasets",access:"Free",region:"UK",tags:["UK","demographics","economy"]},
+  {title:"Eurostat",org:"European Commission",category:"Government",icon:"📈",desc:"Statistical office of the EU providing high-quality statistics and data on Europe's economy, society, and environment.",url:"https://ec.europa.eu/eurostat",access:"Free",region:"Europe",tags:["EU","statistics","economy"]},
+  {title:"World Bank Open Data",org:"World Bank",category:"Government",icon:"🌐",desc:"Free and open access to global development data covering poverty, inequality, education, health, and hundreds of other indicators across 200+ countries.",url:"https://data.worldbank.org",access:"Free",region:"Global",tags:["development","poverty","international"]},
+  {title:"UN Data",org:"United Nations",category:"Government",icon:"🕊️",desc:"A gateway to all United Nations statistical databases. Access data on demography, education, health, trade, energy, and more.",url:"https://data.un.org",access:"Free",region:"Global",tags:["UN","global","demographics"]},
+  {title:"OECD Statistics",org:"OECD",category:"Government",icon:"🏢",desc:"OECD's centralized data source providing statistics on member countries' economies, education, health, labour, and well-being.",url:"https://stats.oecd.org",access:"Free",region:"Intl",tags:["OECD","economy","international"]},
+  {title:"IMF Data",org:"International Monetary Fund",category:"Government",icon:"💹",desc:"IMF's open data service providing macroeconomic statistics including balance of payments, international reserves, and financial soundness indicators.",url:"https://data.imf.org",access:"Free",region:"Intl",tags:["IMF","finance","macroeconomics"]},
+  {title:"India Open Government Data",org:"Government of India",category:"Government",icon:"🇮🇳",desc:"India's open government data platform with datasets from central and state governments across agriculture, education, health, and infrastructure.",url:"https://data.gov.in",access:"Free",region:"Asia",tags:["india","government","statistics"]},
+  {title:"Open Data Singapore",org:"Singapore Government",category:"Government",icon:"🦁",desc:"Singapore's single data sharing platform enabling users to access, share and use government data to catalyse innovation.",url:"https://data.gov.sg",access:"API",region:"Asia",tags:["singapore","smart city","API"]},
+  {title:"Japan Stat Portal",org:"Government of Japan",category:"Government",icon:"🗾",desc:"Japan's official statistical information portal with data on population, economy, agriculture, trade and society.",url:"https://www.e-stat.go.jp/en",access:"Free",region:"Asia",tags:["japan","population","economy"]},
+  {title:"Germany Destatis",org:"Federal Statistical Office",category:"Government",icon:"🇩🇪",desc:"Germany's official federal statistical office providing comprehensive statistical data on the German economy, society, and environment.",url:"https://www.destatis.de/EN",access:"Free",region:"Europe",tags:["germany","statistics","economy"]},
+  {title:"France Data Gouv",org:"French Government",category:"Government",icon:"🇫🇷",desc:"The official French open data platform containing datasets from all government ministries and public organizations.",url:"https://www.data.gouv.fr/en",access:"Free",region:"Europe",tags:["france","government","open data"]},
+
+  // ── SCIENCE ──
+  {title:"NASA Open Data",org:"NASA",category:"Science",icon:"🚀",desc:"NASA's open data portal providing access to datasets from space missions, satellite imagery, climate data, and astronomical observations.",url:"https://data.nasa.gov",access:"API",region:"USA",tags:["space","astronomy","climate"]},
+  {title:"NOAA National Centers",org:"NOAA",category:"Science",icon:"🌊",desc:"National Oceanic and Atmospheric Administration data including weather observations, climate records, tsunami data, and ocean datasets.",url:"https://www.ncei.noaa.gov",access:"Free",region:"USA",tags:["weather","climate","ocean"]},
+  {title:"USGS Science Data",org:"US Geological Survey",category:"Science",icon:"⛰️",desc:"Comprehensive datasets from USGS covering earthquakes, volcanoes, minerals, water resources, land use, and topographic maps.",url:"https://www.usgs.gov/science/science-data",access:"Free",region:"USA",tags:["geology","earthquake","water"]},
+  {title:"GenBank",org:"NCBI / NIH",category:"Science",icon:"🧬",desc:"The NIH genetic sequence database, a comprehensive public database of all publicly available DNA sequences with over 2 trillion bases.",url:"https://www.ncbi.nlm.nih.gov/genbank",access:"Free",region:"USA",tags:["genomics","DNA","biology"]},
+  {title:"UniProt",org:"European Bioinformatics Institute",category:"Science",icon:"🔬",desc:"A comprehensive resource for protein sequence and functional information, providing access to millions of protein entries.",url:"https://www.uniprot.org",access:"Free",region:"Global",tags:["proteins","biology","bioinformatics"]},
+  {title:"CERN Open Data",org:"CERN",category:"Science",icon:"⚛️",desc:"Particle physics data from CERN's Large Hadron Collider experiments, including collision data from CMS and ATLAS detectors.",url:"https://opendata.cern.ch",access:"Free",region:"Europe",tags:["physics","LHC","particles"]},
+  {title:"PubChem",org:"NIH",category:"Science",icon:"🧪",desc:"World's largest collection of freely accessible chemical information with data on 100+ million chemical substances.",url:"https://pubchem.ncbi.nlm.nih.gov",access:"Free",region:"USA",tags:["chemistry","compounds","molecules"]},
+  {title:"Protein Data Bank",org:"RCSB PDB",category:"Science",icon:"🧫",desc:"Global archive of 3D structural data of biological macromolecules including proteins, nucleic acids, and complex assemblies.",url:"https://www.rcsb.org",access:"Free",region:"Global",tags:["proteins","3D structures","biology"]},
+  {title:"NASA Exoplanet Archive",org:"NASA/Caltech",category:"Science",icon:"🪐",desc:"Interactive tables and data download for confirmed and candidate exoplanets, host stars, and related data from NASA's exoplanet search missions.",url:"https://exoplanetarchive.ipac.caltech.edu",access:"Free",region:"USA",tags:["astronomy","exoplanets","space"]},
+  {title:"PhysioNet",org:"MIT",category:"Science",icon:"❤️",desc:"A repository of freely-available medical research data including ECG, EEG, EMG recordings, and clinical data for biomedical research.",url:"https://physionet.org",access:"Free",region:"USA",tags:["medical","ECG","biomedical"]},
+  {title:"GBIF",org:"Global Biodiversity IF",category:"Science",icon:"🦋",desc:"Global Biodiversity Information Facility providing free and open access to biodiversity data for over 2 billion occurrence records of species.",url:"https://www.gbif.org",access:"Free",region:"Global",tags:["biodiversity","species","ecology"]},
+  {title:"Ocean Biodiversity IS",org:"OBIS",category:"Science",icon:"🐋",desc:"Ocean Biodiversity Information System providing marine species occurrence data with over 90 million records from the world's oceans.",url:"https://obis.org",access:"Free",region:"Global",tags:["ocean","marine","biodiversity"]},
+  {title:"PANGAEA",org:"MARUM / AWI",category:"Science",icon:"🌍",desc:"Publisher and library for earth and environmental science data providing access to geoscientific raw data from scientific projects.",url:"https://www.pangaea.de",access:"Free",region:"Global",tags:["earth science","climate","ocean"]},
+  {title:"Copernicus Open Access Hub",org:"ESA",category:"Science",icon:"🛰️",desc:"European Space Agency's Copernicus program satellite data providing free full and open access to Sentinel satellite imagery.",url:"https://dataspace.copernicus.eu",access:"Free",region:"Europe",tags:["satellite","imagery","ESA"]},
+  {title:"SIMBAD Astronomical DB",org:"CDS Strasbourg",category:"Science",icon:"🌟",desc:"Astronomical database providing reference data for celestial objects outside the solar system — stars, galaxies, and nebulae.",url:"https://simbad.u-strasbg.fr",access:"Free",region:"Europe",tags:["astronomy","stars","galaxies"]},
+  {title:"IRIS Seismic Data",org:"IRIS Consortium",category:"Science",icon:"📡",desc:"Seismological data access providing earthquake waveforms, station data, and earthquake catalogs from global seismic networks.",url:"https://www.iris.edu/hq/iris_data",access:"Free",region:"Global",tags:["seismic","earthquakes","geology"]},
+  {title:"NASA Earthdata",org:"NASA",category:"Science",icon:"🌎",desc:"Access to NASA's extensive Earth science data including satellite observations, model outputs, and field campaigns for climate research.",url:"https://earthdata.nasa.gov",access:"Free",region:"USA",tags:["earth","satellite","climate"]},
+  {title:"ENCODE Project",org:"NIH",category:"Science",icon:"🧬",desc:"Encyclopedia of DNA Elements providing functional genomics data mapping regulatory elements in the human genome.",url:"https://www.encodeproject.org",access:"Free",region:"USA",tags:["genomics","DNA","regulatory"]},
+  {title:"Open Science Framework",org:"Center for Open Science",category:"Science",icon:"🔭",desc:"A free open platform supporting research and enables collaboration, providing data storage and sharing for scientific projects.",url:"https://osf.io",access:"Free",region:"Global",tags:["research","preprints","collaboration"]},
+
+  // ── HEALTH ──
+  {title:"CDC WONDER",org:"CDC",category:"Health",icon:"🏥",desc:"Wide-ranging Online Data for Epidemiologic Research from the CDC. Access natality, mortality, cancer, and environmental data for the US.",url:"https://wonder.cdc.gov",access:"Free",region:"USA",tags:["mortality","epidemiology","US"]},
+  {title:"WHO Global Health Observatory",org:"WHO",category:"Health",icon:"🌡️",desc:"WHO's gateway to health-related statistics for its 194 member states, tracking 1000+ health indicators including disease burden and risk factors.",url:"https://www.who.int/data/gho",access:"Free",region:"Global",tags:["WHO","global","disease"]},
+  {title:"ClinicalTrials.gov",org:"NIH / NLM",category:"Health",icon:"💊",desc:"A registry and results database of publicly and privately supported clinical studies worldwide with 400,000+ registered trials.",url:"https://clinicaltrials.gov",access:"Free",region:"USA",tags:["clinical trials","research","drugs"]},
+  {title:"IHME Global Health Data",org:"Univ. of Washington",category:"Health",icon:"📊",desc:"Global Burden of Disease data from the Institute for Health Metrics and Evaluation covering causes of death and disability worldwide.",url:"https://www.healthdata.org/data-tools-practices/data-resources",access:"Free",region:"Global",tags:["disease burden","global","mortality"]},
+  {title:"NIH Open Access Data",org:"NIH",category:"Health",icon:"🔬",desc:"National Institutes of Health data-sharing repositories including NCI genomic data, NHANES surveys, and biobank resources.",url:"https://www.nihdatarepository.nih.gov",access:"Free",region:"USA",tags:["NIH","biobank","genomics"]},
+  {title:"NHANES",org:"CDC/NCHS",category:"Health",icon:"🩺",desc:"National Health and Nutrition Examination Survey assessing health and nutritional status of US adults and children with lab data.",url:"https://www.cdc.gov/nchs/nhanes",access:"Free",region:"USA",tags:["nutrition","survey","USA"]},
+  {title:"OpenFDA",org:"FDA",category:"Health",icon:"💉",desc:"Open data from FDA covering adverse events, drug labels, food enforcement, device recalls, and tobacco product reports.",url:"https://open.fda.gov",access:"API",region:"USA",tags:["FDA","drugs","recalls"]},
+  {title:"MIMIC Clinical Database",org:"MIT / Beth Israel",category:"Health",icon:"🏨",desc:"Freely accessible critical care database containing de-identified health data from ICU patients at BIDMC hospital in Boston.",url:"https://mimic.mit.edu",access:"Free",region:"USA",tags:["ICU","clinical","EHR"]},
+  {title:"SEER Cancer Data",org:"NCI",category:"Health",icon:"🎗️",desc:"Surveillance, Epidemiology, and End Results program providing cancer statistics on incidence, survival, and prevalence in the US.",url:"https://seer.cancer.gov/data",access:"Free",region:"USA",tags:["cancer","survival","epidemiology"]},
+  {title:"EU Health Data",org:"Eurostat",category:"Health",icon:"🇪🇺",desc:"European health statistics covering health status, healthcare utilization, health determinants, and health systems performance.",url:"https://ec.europa.eu/eurostat/web/health/data",access:"Free",region:"Europe",tags:["EU","healthcare","statistics"]},
+  {title:"Global Health Observatory API",org:"WHO",category:"Health",icon:"📡",desc:"WHO's RESTful API providing programmatic access to over 2,000 health indicators for countries and regions worldwide.",url:"https://www.who.int/data/gho/info/gho-odata-api",access:"API",region:"Global",tags:["WHO","API","indicators"]},
+  {title:"HealthData.gov",org:"HHS",category:"Health",icon:"🏛️",desc:"US Department of Health and Human Services open data catalog with 3000+ datasets on Medicare, Medicaid, hospital quality, and public health.",url:"https://healthdata.gov",access:"Free",region:"USA",tags:["HHS","Medicare","hospitals"]},
+  {title:"ECDC Surveillance Atlas",org:"ECDC",category:"Health",icon:"🦠",desc:"European Centre for Disease Prevention and Control surveillance data on communicable diseases across EU/EEA countries.",url:"https://atlas.ecdc.europa.eu",access:"Free",region:"Europe",tags:["EU","communicable disease","surveillance"]},
+  {title:"Global Antimicrobial Resistance",org:"WHO/GLASS",category:"Health",icon:"🧫",desc:"WHO's Global Antimicrobial Resistance and Use Surveillance System data on drug resistance patterns from countries worldwide.",url:"https://www.who.int/glass/resources/publications",access:"Free",region:"Global",tags:["AMR","resistance","WHO"]},
+
+  // ── ECONOMICS & FINANCE ──
+  {title:"FRED Economic Data",org:"Federal Reserve Bank of St. Louis",category:"Economics",icon:"📈",desc:"Free access to 800,000+ economic data series from 100+ sources including the Fed, BLS, Census, and international organizations.",url:"https://fred.stlouisfed.org",access:"API",region:"USA",tags:["macroeconomics","Fed","time series"]},
+  {title:"BLS Data",org:"Bureau of Labor Statistics",category:"Economics",icon:"👷",desc:"US Bureau of Labor Statistics providing comprehensive data on employment, wages, prices, productivity, and working conditions.",url:"https://www.bls.gov/data",access:"API",region:"USA",tags:["employment","wages","CPI"]},
+  {title:"US Census Bureau Data",org:"US Census",category:"Economics",icon:"🏠",desc:"American Community Survey and decennial census data on demographics, housing, income, poverty, and economic characteristics.",url:"https://data.census.gov",access:"Free",region:"USA",tags:["demographics","census","housing"]},
+  {title:"Quandl / Nasdaq Data Link",org:"Nasdaq",category:"Economics",icon:"💰",desc:"Financial, economic and alternative data platform with datasets on stocks, futures, options, currencies, bonds, and commodities.",url:"https://data.nasdaq.com",access:"API",region:"Global",tags:["finance","stocks","commodities"]},
+  {title:"World Bank DataBank",org:"World Bank",category:"Economics",icon:"🏦",desc:"Online database with over 14,000 indicators on development, covering economy, finance, infrastructure, and social sectors globally.",url:"https://databank.worldbank.org",access:"Free",region:"Global",tags:["development","GDP","indicators"]},
+  {title:"UNCTAD Stats",org:"UNCTAD",category:"Economics",icon:"🚢",desc:"UN Conference on Trade and Development statistical database covering trade flows, FDI, commodity prices, and economic trends.",url:"https://unctadstat.unctad.org",access:"Free",region:"Global",tags:["trade","FDI","development"]},
+  {title:"IMF World Economic Outlook",org:"IMF",category:"Economics",icon:"📊",desc:"IMF's World Economic Outlook Database providing macroeconomic projections for GDP growth, inflation, and trade for 190+ countries.",url:"https://www.imf.org/en/Publications/WEO/weo-database",access:"Free",region:"Global",tags:["GDP","IMF","forecasts"]},
+  {title:"BIS Statistics",org:"Bank for International Settlements",category:"Economics",icon:"🏛️",desc:"Bank for International Settlements data on global banking, debt securities, derivatives, and financial stability indicators.",url:"https://stats.bis.org",access:"Free",region:"Intl",tags:["banking","debt","financial"]},
+  {title:"Transparency International",org:"TI",category:"Economics",icon:"⚖️",desc:"Corruption Perceptions Index and other governance datasets tracking corruption levels across 180+ countries with historical data.",url:"https://www.transparency.org/en/cpi",access:"Free",region:"Global",tags:["corruption","governance","transparency"]},
+  {title:"Penn World Tables",org:"Univ. of Groningen",category:"Economics",icon:"📉",desc:"Long-run cross-country data on national accounts including GDP, capital, employment, and total factor productivity across 180 countries.",url:"https://www.rug.nl/ggdc/productivity/pwt",access:"Free",region:"Global",tags:["GDP","cross-country","historical"]},
+  {title:"Our World in Data",org:"OWID / Oxford",category:"Economics",icon:"🌍",desc:"Research and data to make progress against the world's largest problems — charts and datasets on poverty, disease, energy, and much more.",url:"https://ourworldindata.org/data",access:"Free",region:"Global",tags:["global","trends","inequality"]},
+  {title:"EDGAR SEC Filings",org:"SEC",category:"Economics",icon:"📋",desc:"Electronic Data Gathering, Analysis, and Retrieval system containing financial statements, earnings, and filings from US public companies.",url:"https://www.sec.gov/edgar",access:"Free",region:"USA",tags:["SEC","filings","corporate"]},
+  {title:"OpenCorporates",org:"OpenCorporates",category:"Economics",icon:"🏢",desc:"The largest open database of companies in the world with data on 200+ million companies from 140+ jurisdictions.",url:"https://opencorporates.com",access:"API",region:"Global",tags:["companies","corporate","registry"]},
+
+  // ── ENVIRONMENT ──
+  {title:"Global Carbon Project",org:"GCP",category:"Environment",icon:"♻️",desc:"Annual global carbon budget data including CO2 emissions from fossil fuels, land use change, and ocean/land carbon sinks.",url:"https://www.globalcarbonproject.org/carbonbudget/data.htm",access:"Free",region:"Global",tags:["carbon","emissions","climate"]},
+  {title:"Climate Watch Data",org:"WRI",category:"Environment",icon:"🌡️",desc:"World Resources Institute platform for climate data including NDCs, GHG emissions by country, and climate policy tracking.",url:"https://www.climatewatchdata.org/data-explorer",access:"Free",region:"Global",tags:["climate","emissions","policy"]},
+  {title:"EPA Environmental Data",org:"US EPA",category:"Environment",icon:"🌿",desc:"US EPA's data catalog including air quality, water quality, toxic releases, superfund sites, and environmental justice data.",url:"https://www.epa.gov/data",access:"Free",region:"USA",tags:["EPA","air quality","water"]},
+  {title:"Global Forest Watch",org:"WRI",category:"Environment",icon:"🌲",desc:"Open data platform providing near real-time monitoring of global forests including deforestation alerts and tree cover data.",url:"https://www.globalforestwatch.org/dashboards/global",access:"Free",region:"Global",tags:["deforestation","forests","satellite"]},
+  {title:"NOAA Climate Data Online",org:"NOAA",category:"Environment",icon:"🌦️",desc:"Historical climate data archive from NOAA with weather station records, radar data, and climate indices going back centuries.",url:"https://www.ncei.noaa.gov/cdo-web",access:"Free",region:"USA",tags:["weather","historical","climate"]},
+  {title:"Copernicus Climate Data Store",org:"ECMWF / EU",category:"Environment",icon:"☁️",desc:"EU's climate data store providing free access to climate model outputs, reanalysis data, and climate projections.",url:"https://cds.climate.copernicus.eu",access:"Free",region:"Europe",tags:["climate","reanalysis","EU"]},
+  {title:"CIESIN Gridded Data",org:"Columbia University",category:"Environment",icon:"🗺️",desc:"Center for International Earth Science Information Network providing gridded population, infrastructure, and environmental datasets.",url:"https://www.ciesin.columbia.edu/data.html",access:"Free",region:"Global",tags:["population","gridded","spatial"]},
+  {title:"FAO AQUASTAT",org:"FAO",category:"Environment",icon:"💧",desc:"FAO's global information system on water resources and agricultural water management providing data on freshwater across 200+ countries.",url:"https://www.fao.org/aquastat/en/databases",access:"Free",region:"Global",tags:["water","agriculture","FAO"]},
+  {title:"Global Fishing Watch",org:"GFW",category:"Environment",icon:"🎣",desc:"Open access platform for monitoring global fishing activity using satellite data, tracking vessel movements in near real-time.",url:"https://globalfishingwatch.org/data-download",access:"Free",region:"Global",tags:["fishing","ocean","satellite"]},
+  {title:"IEA Energy Data",org:"International Energy Agency",category:"Environment",icon:"⚡",desc:"IEA's energy statistics and data covering electricity generation, energy consumption, CO2 emissions, and energy balances by country.",url:"https://www.iea.org/data-and-statistics",access:"Free",region:"Intl",tags:["energy","electricity","emissions"]},
+  {title:"UNEP WCMC Ocean Data",org:"UNEP-WCMC",category:"Environment",icon:"🪸",desc:"Ocean data viewer providing information on marine protected areas, coral reefs, seagrass, mangroves, and ocean biodiversity.",url:"https://data.unep-wcmc.org",access:"Free",region:"Global",tags:["ocean","marine","protected areas"]},
+  {title:"Global Air Quality Data",org:"OpenAQ",category:"Environment",icon:"🌫️",desc:"Open-source platform aggregating real-time and historical air quality data from 11,000+ locations across 100+ countries.",url:"https://openaq.org/data",access:"API",region:"Global",tags:["air quality","pollution","real-time"]},
+
+  // ── TECHNOLOGY ──
+  {title:"GitHub Archive",org:"GitHub",category:"Technology",icon:"🐙",desc:"A project recording the public GitHub timeline, archiving code events for analysis and research on open source development trends.",url:"https://www.gharchive.org",access:"Free",region:"Global",tags:["GitHub","open source","code"]},
+  {title:"Stack Overflow Survey Data",org:"Stack Overflow",category:"Technology",icon:"📚",desc:"Annual Developer Survey raw data covering 90,000+ developers' tools, technologies, salaries, and work preferences.",url:"https://survey.stackoverflow.co",access:"Free",region:"Global",tags:["developers","survey","programming"]},
+  {title:"Common Crawl",org:"Common Crawl",category:"Technology",icon:"🕸️",desc:"Petabyte-scale open dataset of web crawl data containing raw web pages, extracted metadata, and text extractions from billions of URLs.",url:"https://commoncrawl.org",access:"Bulk",region:"Global",tags:["web","NLP","crawl"]},
+  {title:"WikiData",org:"Wikimedia",category:"Technology",icon:"📖",desc:"Free collaborative knowledge base with over 100 million data items, serving as structured data behind Wikipedia.",url:"https://www.wikidata.org/wiki/Wikidata:Main_Page",access:"Free",region:"Global",tags:["knowledge graph","linked data","Wikipedia"]},
+  {title:"DBpedia",org:"DBpedia Association",category:"Technology",icon:"🔗",desc:"Structured information extracted from Wikipedia available as linked open data, enabling semantic queries over Wikipedia content.",url:"https://www.dbpedia.org",access:"Free",region:"Global",tags:["linked data","Wikipedia","semantic"]},
+  {title:"Registry of Open Data on AWS",org:"Amazon Web Services",category:"Technology",icon:"☁️",desc:"Registry of publicly available datasets on AWS S3 including genomics, satellite imagery, climate, and ML training datasets.",url:"https://registry.opendata.aws",access:"Free",region:"Global",tags:["AWS","cloud","datasets"]},
+  {title:"Hugging Face Datasets",org:"Hugging Face",category:"Technology",icon:"🤗",desc:"Community-maintained hub of thousands of ML datasets for NLP, computer vision, audio, and multimodal AI research.",url:"https://huggingface.co/datasets",access:"Free",region:"Global",tags:["ML","NLP","AI"]},
+  {title:"UCI ML Repository",org:"UC Irvine",category:"Technology",icon:"🤖",desc:"Collection of 650+ machine learning datasets maintained by UC Irvine's Center for Machine Learning and Intelligent Systems.",url:"https://archive.ics.uci.edu",access:"Free",region:"USA",tags:["machine learning","datasets","AI"]},
+  {title:"Papers With Code",org:"Meta AI",category:"Technology",icon:"📄",desc:"Free and open resource with machine learning papers, code, datasets, methods, and evaluation tables to track ML progress.",url:"https://paperswithcode.com/datasets",access:"Free",region:"Global",tags:["ML","benchmarks","papers"]},
+  {title:"CVS Open Datasets",org:"Google",category:"Technology",icon:"🖼️",desc:"Google's Open Images dataset — large-scale dataset with 9M images annotated with labels, bounding boxes, and visual relationships.",url:"https://storage.googleapis.com/openimages/web/index.html",access:"Free",region:"Global",tags:["computer vision","images","ML"]},
+  {title:"SNAP Stanford Network Data",org:"Stanford",category:"Technology",icon:"🕸️",desc:"Stanford Network Analysis Project datasets including social networks, web graphs, and product co-purchasing networks.",url:"https://snap.stanford.edu/data",access:"Free",region:"USA",tags:["networks","graphs","social"]},
+  {title:"Internet Archive",org:"Internet Archive",category:"Technology",icon:"📚",desc:"Digital library providing access to millions of free books, movies, software, music, websites, and wayback machine data.",url:"https://archive.org/developers",access:"API",region:"Global",tags:["archive","web","history"]},
+  {title:"Shodan",org:"Shodan",category:"Technology",icon:"🔍",desc:"Search engine for internet-connected devices providing data on exposed services, vulnerabilities, and internet topology.",url:"https://www.shodan.io/explore",access:"API",region:"Global",tags:["IoT","security","internet"]},
+
+  // ── SOCIAL ──
+  {title:"Pew Research Data",org:"Pew Research Center",category:"Social",icon:"👥",desc:"Pew Research Center's datasets and topline questionnaires from their surveys on politics, media, religion, and social trends.",url:"https://www.pewresearch.org/download-datasets",access:"Free",region:"USA",tags:["survey","opinion","demographics"]},
+  {title:"ICPSR",org:"Univ. of Michigan",category:"Social",icon:"🏛️",desc:"Inter-university Consortium for Political and Social Research — largest archive of social science data with 17,000+ studies.",url:"https://www.icpsr.umich.edu",access:"Free",region:"USA",tags:["social science","surveys","research"]},
+  {title:"General Social Survey",org:"NORC / Univ. of Chicago",category:"Social",icon:"📋",desc:"The GSS has monitored societal change and studied the growing complexity of American society since 1972 with thousands of variables.",url:"https://gss.norc.org/Get-The-Data",access:"Free",region:"USA",tags:["survey","USA","social trends"]},
+  {title:"Harvard Dataverse",org:"Harvard University",category:"Social",icon:"📚",desc:"Open-source research data repository software used by Harvard and many other institutions to store and share research data.",url:"https://dataverse.harvard.edu",access:"Free",region:"USA",tags:["academic","research","datasets"]},
+  {title:"IPUMS",org:"Univ. of Minnesota",category:"Social",icon:"📊",desc:"Integrated Public Use Microdata Series providing census and survey data from the US and around the world for social research.",url:"https://www.ipums.org",access:"Free",region:"Global",tags:["census","microdata","demographics"]},
+  {title:"Gapminder",org:"Gapminder Foundation",category:"Social",icon:"🌐",desc:"Free data from Gapminder covering hundreds of global development indicators on health, wealth, population, and education.",url:"https://www.gapminder.org/data",access:"Free",region:"Global",tags:["development","global","trends"]},
+  {title:"OECD Better Life Index",org:"OECD",category:"Social",icon:"😊",desc:"Comprehensive data on well-being across 40 countries covering housing, income, jobs, education, safety, and life satisfaction.",url:"https://stats.oecd.org/index.aspx?DataSetCode=BLI",access:"Free",region:"Intl",tags:["well-being","OECD","quality of life"]},
+  {title:"Varieties of Democracy",org:"V-Dem Institute",category:"Social",icon:"🗳️",desc:"Democracy data project providing 400+ political indicators for 202 countries from 1789 to today, measuring democratic principles.",url:"https://www.v-dem.net/data",access:"Free",region:"Global",tags:["democracy","politics","governance"]},
+  {title:"Armed Conflict Location & Event",org:"ACLED",category:"Social",icon:"⚠️",desc:"Real-time data and analysis on political violence and protest events globally, covering conflicts in 100+ countries.",url:"https://acleddata.com",access:"Free",region:"Global",tags:["conflict","violence","political"]},
+
+  // ── GEOSPATIAL ──
+  {title:"OpenStreetMap Data",org:"OpenStreetMap",category:"Geospatial",icon:"🗺️",desc:"Free editable geographic database of the world covering roads, trails, cafés, railway stations, and much more from volunteer contributions.",url:"https://planet.openstreetmap.org",access:"Free",region:"Global",tags:["maps","streets","POI"]},
+  {title:"Natural Earth Data",org:"Natural Earth",category:"Geospatial",icon:"🌐",desc:"Free public domain map dataset at 1:10m, 1:50m, and 1:110m scales covering countries, states, cities, rivers, and more.",url:"https://www.naturalearthdata.com",access:"Free",region:"Global",tags:["vector","raster","cartography"]},
+  {title:"Humanitarian Data Exchange",org:"UN OCHA",category:"Geospatial",icon:"🆘",desc:"Open platform for sharing data across crises and organizations covering humanitarian operations, population, and needs.",url:"https://data.humdata.org",access:"Free",region:"Global",tags:["humanitarian","crisis","UN"]},
+  {title:"GADM Database",org:"University of Berkeley",category:"Geospatial",icon:"📐",desc:"Database of the location of the world's administrative areas with boundaries at national, state/province, and county levels.",url:"https://gadm.org",access:"Free",region:"Global",tags:["boundaries","administrative","GIS"]},
+  {title:"NASA SEDAC",org:"NASA / Columbia",category:"Geospatial",icon:"🌏",desc:"Socioeconomic Data and Applications Center providing data on human interactions in the environment including population grids.",url:"https://sedac.ciesin.columbia.edu",access:"Free",region:"Global",tags:["population","environment","gridded"]},
+  {title:"Landsat Data",org:"USGS / NASA",category:"Geospatial",icon:"🛰️",desc:"Free satellite imagery from the Landsat program — the world's longest continuously acquired collection of moderate-resolution satellite data.",url:"https://landsat.usgs.gov/landsat-data-access",access:"Free",region:"Global",tags:["satellite","imagery","remote sensing"]},
+  {title:"Google Earth Engine",org:"Google",category:"Geospatial",icon:"🌍",desc:"Planetary-scale geospatial analysis platform with a multi-petabyte catalog of satellite imagery and geospatial datasets.",url:"https://developers.google.com/earth-engine/datasets",access:"API",region:"Global",tags:["satellite","GIS","analysis"]},
+  {title:"GeoNames",org:"GeoNames",category:"Geospatial",icon:"📍",desc:"Geographical database covering all countries and containing over 25 million place names with coordinates and admin boundaries.",url:"https://www.geonames.org/export",access:"Free",region:"Global",tags:["place names","geocoding","geography"]},
+  {title:"SRTM Elevation Data",org:"NASA / NGA",category:"Geospatial",icon:"⛰️",desc:"Shuttle Radar Topography Mission providing near-global digital elevation data at 30m resolution for terrain modeling.",url:"https://www2.jpl.nasa.gov/srtm",access:"Free",region:"Global",tags:["elevation","DEM","terrain"]},
+  {title:"OpenTopography",org:"NSF",category:"Geospatial",icon:"🏔️",desc:"High-resolution topographic data including LiDAR point clouds, DEMs and DSMs for research and education in earth sciences.",url:"https://portal.opentopography.org",access:"Free",region:"Global",tags:["LiDAR","elevation","terrain"]},
+  {title:"Overture Maps",org:"Overture Maps Foundation",category:"Geospatial",icon:"🗺️",desc:"Open map data from the Overture Maps Foundation backed by Amazon, Meta, Microsoft, and TomTom — an open alternative to proprietary maps.",url:"https://overturemaps.org",access:"Free",region:"Global",tags:["maps","POI","buildings"]},
+
+  // ── EDUCATION ──
+  {title:"NCES Data",org:"US Dept. of Education",category:"Education",icon:"🎓",desc:"National Center for Education Statistics — primary federal entity for collecting and analyzing data related to education in the US.",url:"https://nces.ed.gov/datatools",access:"Free",region:"USA",tags:["schools","universities","USA"]},
+  {title:"PISA Data",org:"OECD",category:"Education",icon:"📝",desc:"Programme for International Student Assessment datasets measuring 15-year-olds' reading, mathematics, and science skills across 90+ countries.",url:"https://www.oecd.org/pisa/data",access:"Free",region:"Intl",tags:["students","testing","OECD"]},
+  {title:"College Scorecard",org:"US Dept. of Education",category:"Education",icon:"🏫",desc:"Federal dataset on US college earnings outcomes, graduation rates, financial aid, and institutional characteristics.",url:"https://collegescorecard.ed.gov/data",access:"Free",region:"USA",tags:["universities","earnings","USA"]},
+  {title:"UNESCO Education Data",org:"UNESCO",category:"Education",icon:"📚",desc:"UNESCO Institute for Statistics data on global education including enrollment, literacy, teachers, and learning outcomes.",url:"https://uis.unesco.org",access:"Free",region:"Global",tags:["UNESCO","literacy","global"]},
+  {title:"TIMSS Data",org:"IEA",category:"Education",icon:"🔢",desc:"Trends in International Mathematics and Science Study — assessment data from 60+ countries on student achievement in math and science.",url:"https://timssandpirls.bc.edu/timss2019/international-database",access:"Free",region:"Global",tags:["math","science","students"]},
+  {title:"Open Syllabus",org:"Open Syllabus Project",category:"Education",icon:"📖",desc:"Analysis of 20 million college course syllabi revealing what texts are assigned across academia and how disciplines relate.",url:"https://opensyllabus.org",access:"Free",region:"Global",tags:["syllabi","academic","books"]},
+
+  // ── TRANSPORT ──
+  {title:"Bureau of Transportation Stats",org:"BTS",category:"Transport",icon:"✈️",desc:"US Bureau of Transportation Statistics providing data on aviation, rail, highway, transit, freight, and passenger travel.",url:"https://www.bts.gov/browse-statistical-products-and-data",access:"Free",region:"USA",tags:["aviation","rail","freight"]},
+  {title:"OpenFlights Database",org:"OpenFlights",category:"Transport",icon:"🛫",desc:"Open database of 10,000+ airports, 5,900 airlines, and 67,000 routes with IATA/ICAO codes, coordinates, and equipment.",url:"https://openflights.org/data.php",access:"Free",region:"Global",tags:["airports","airlines","routes"]},
+  {title:"ADS-B Exchange",org:"ADS-B Exchange",category:"Transport",icon:"📡",desc:"World's largest unfiltered source of flight data providing real-time and historical aircraft tracking from ADS-B receivers.",url:"https://www.adsbexchange.com/data",access:"API",region:"Global",tags:["aircraft","flight tracking","ADS-B"]},
+  {title:"OpenRailwayMap",org:"OpenRailwayMap",category:"Transport",icon:"🚂",desc:"Detailed online map of the world's railroad infrastructure using OpenStreetMap data with station, speed, and electrification info.",url:"https://www.openrailwaymap.org",access:"Free",region:"Global",tags:["rail","railway","infrastructure"]},
+  {title:"GTFS Data Exchange",org:"MobilityData",category:"Transport",icon:"🚌",desc:"Open format for public transportation schedules and geographic information — GTFS feeds from transit agencies worldwide.",url:"https://database.mobilitydata.org",access:"Free",region:"Global",tags:["transit","GTFS","schedules"]},
+  {title:"UK STATS19 Crash Data",org:"UK DfT",category:"Transport",icon:"🚗",desc:"UK road accident data collected by police — detailed information on collisions, casualties, and vehicles since 1979.",url:"https://www.data.gov.uk/dataset/cb7ae6f0-4be6-4935-9277-47e5ce24a11f/road-accidents-safety-data",access:"Free",region:"UK",tags:["accidents","roads","UK"]},
+  {title:"US Traffic Fatalities FARS",org:"NHTSA",category:"Transport",icon:"🚑",desc:"Fatality Analysis Reporting System — census of all vehicle traffic crashes in the US that result in a fatality.",url:"https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars",access:"Free",region:"USA",tags:["accidents","fatalities","USA"]},
+  {title:"Marine Traffic Data",org:"MarineTraffic",category:"Transport",icon:"🚢",desc:"Global ship tracking intelligence — AIS vessel positions, port calls, and maritime data for 600,000+ vessels worldwide.",url:"https://www.marinetraffic.com/en/ais/details/api",access:"API",region:"Global",tags:["shipping","vessels","maritime"]},
+  {title:"Bike Share Data",org:"Various Cities",category:"Transport",icon:"🚲",desc:"Open trip history data from major bike-sharing systems including Citi Bike (NYC), Divvy (Chicago), and Capital Bikeshare (DC).",url:"https://citibikenyc.com/system-data",access:"Free",region:"USA",tags:["cycling","bike share","urban"]},
+
+  // ── ENERGY ──
+  {title:"EIA Open Data",org:"US Energy Information Admin",category:"Energy",icon:"⚡",desc:"Comprehensive US energy data from the EIA covering electricity, petroleum, natural gas, coal, nuclear, and renewables.",url:"https://www.eia.gov/opendata",access:"API",region:"USA",tags:["electricity","petroleum","renewables"]},
+  {title:"IRENA Renewable Data",org:"IRENA",category:"Energy",icon:"☀️",desc:"International Renewable Energy Agency statistics on capacity, generation, and investment for all renewable energy types worldwide.",url:"https://www.irena.org/Data",access:"Free",region:"Global",tags:["renewable","solar","wind"]},
+  {title:"Global Power Plant Database",org:"WRI",category:"Energy",icon:"🏭",desc:"Open database of power plants around the world with capacity, generation, ownership, and geolocation for 35,000+ plants.",url:"https://datasets.wri.org/dataset/globalpowerplantdatabase",access:"Free",region:"Global",tags:["power plants","electricity","generation"]},
+  {title:"OpenEI",org:"US Dept. of Energy",category:"Energy",icon:"🔋",desc:"Open Energy Information platform with datasets on electricity rates, building energy, wind, solar, and geothermal resources.",url:"https://openei.org/datasets",access:"Free",region:"USA",tags:["DOE","electricity","renewable"]},
+  {title:"Ember Climate Data",org:"Ember",category:"Energy",icon:"🔥",desc:"Independent climate and energy think tank providing data on electricity generation globally with a focus on clean energy transition.",url:"https://ember-climate.org/data",access:"Free",region:"Global",tags:["electricity","coal","decarbonization"]},
+  {title:"Carbon Monitor",org:"Global Carbon Project",category:"Energy",icon:"🌫️",desc:"Near-real-time estimates of daily CO2 emissions by country and sector, updated continuously using multiple data streams.",url:"https://carbonmonitor.org",access:"Free",region:"Global",tags:["CO2","emissions","real-time"]},
+
+  // ── LEGAL ──
+  {title:"PACER Federal Court Data",org:"US Federal Courts",category:"Legal",icon:"⚖️",desc:"Public Access to Court Electronic Records — access to US federal court documents including case filings, opinions, and dockets.",url:"https://pacer.uscourts.gov",access:"Free",region:"USA",tags:["courts","filings","USA"]},
+  {title:"CourtListener",org:"Free Law Project",category:"Legal",icon:"🏛️",desc:"Free legal research platform with 7+ million opinions from US federal and state courts, with bulk data available for download.",url:"https://www.courtlistener.com/",access:"Free",region:"USA",tags:["court opinions","legal","USA"]},
+  {title:"OpenSecrets",org:"Center for Responsive Politics",category:"Legal",icon:"💵",desc:"Comprehensive data on campaign finance, lobbying, outside spending, and politicians' personal finances in the US.",url:"https://www.opensecrets.org/open-data",access:"Free",region:"USA",tags:["campaign finance","lobbying","politics"]},
+  {title:"EU Legislation",org:"EU Publications Office",category:"Legal",icon:"📜",desc:"EUR-Lex provides free access to EU law including treaties, regulations, directives, and case law with full-text search.",url:"https://eur-lex.europa.eu/homepage.html",access:"Free",region:"Europe",tags:["EU","law","legislation"]},
+  {title:"Congress.gov Data",org:"Library of Congress",category:"Legal",icon:"🏛️",desc:"Official legislative information from the Library of Congress covering bills, congressional record, nominations, and treaties.",url:"https://www.congress.gov/help/bulk-data",access:"Free",region:"USA",tags:["legislation","congress","bills"]},
+  {title:"FEC Campaign Finance Data",org:"Federal Election Commission",category:"Legal",icon:"🗳️",desc:"All federal campaign finance data including contributions, expenditures, independent spending, and political action committees.",url:"https://www.fec.gov/data",access:"API",region:"USA",tags:["elections","campaign finance","PAC"]},
+  {title:"Global Integrity",org:"Global Integrity",category:"Legal",icon:"🔎",desc:"Research and data on anti-corruption laws, open governance policies, and accountability mechanisms across 100+ countries.",url:"https://www.globalintegrity.org/tools",access:"Free",region:"Global",tags:["corruption","governance","accountability"]},
+  {title:"Open Sanctions",org:"Open Sanctions",category:"Legal",icon:"🚫",desc:"Open database of sanctions targets from US OFAC, EU, UN, and 40+ other sources covering individuals, companies, and vessels.",url:"https://www.opensanctions.org/datasets",access:"Free",region:"Global",tags:["sanctions","compliance","AML"]},
+
+  // ── MEDIA ──
+  {title:"GDELT Project",org:"GDELT",category:"Media",icon:"📰",desc:"Global Database of Events, Language and Tone — a realtime open data global graph over human society monitoring world news across 100+ languages.",url:"https://www.gdeltproject.org/data.html",access:"Free",region:"Global",tags:["news","events","NLP"]},
+  {title:"Media Cloud",org:"MIT / Harvard",category:"Media",icon:"📡",desc:"Open-source platform for studying online news media at scale with access to millions of news stories and their metadata.",url:"https://mediacloud.org",access:"API",region:"Global",tags:["news","media","research"]},
+  {title:"Internet Archive TV News",org:"Internet Archive",category:"Media",icon:"📺",desc:"Searchable database of TV news programs captured from US and international broadcasters since 2009 with transcripts.",url:"https://archive.org/details/tv",access:"Free",region:"USA",tags:["TV","news","archive"]},
+  {title:"Wikipedia Data Dumps",org:"Wikimedia Foundation",category:"Media",icon:"📖",desc:"Complete dumps of Wikipedia database including all article text, talk pages, user pages, and revision history.",url:"https://dumps.wikimedia.org",access:"Bulk",region:"Global",tags:["Wikipedia","text","NLP"]},
+  {title:"Reddit Pushshift Data",org:"Pushshift",category:"Media",icon:"🤖",desc:"Historical Reddit data archive containing submissions and comments for social media research — billions of posts.",url:"https://pushshift.io",access:"Bulk",region:"Global",tags:["Reddit","social media","NLP"]},
+  {title:"Open Library",org:"Internet Archive",category:"Media",icon:"📗",desc:"An open, editable library catalog with data on 20 million books, author information, and bibliographic records.",url:"https://openlibrary.org/developers/api",access:"API",region:"Global",tags:["books","library","catalog"]},
+  {title:"MusicBrainz",org:"MetaBrainz",category:"Media",icon:"🎵",desc:"Open music encyclopedia that collects music metadata — artists, releases, recordings, and labels — freely available.",url:"https://musicbrainz.org/data",access:"Free",region:"Global",tags:["music","metadata","catalog"]},
+  {title:"Discogs Data",org:"Discogs",category:"Media",icon:"💿",desc:"Crowdsourced database of over 15 million releases, 7 million artists, and 1 million labels in the music industry.",url:"https://www.discogs.com/developers",access:"API",region:"Global",tags:["music","releases","vinyl"]},
+  {title:"Open Movie Database",org:"OMDb",category:"Media",icon:"🎬",desc:"RESTful web service to obtain movie information including ratings, plot, cast, awards, and box office data.",url:"https://www.omdbapi.com",access:"API",region:"Global",tags:["movies","ratings","films"]},
+
+  // ── HUMANITARIAN ──
+  {title:"UNHCR Refugee Data Finder",org:"UNHCR",category:"Humanitarian",icon:"🏕️",desc:"UNHCR's tool for accessing comprehensive data on refugees, asylum seekers, and internally displaced persons worldwide.",url:"https://www.unhcr.org/refugee-statistics",access:"Free",region:"Global",tags:["refugees","displacement","UN"]},
+  {title:"ReliefWeb Datasets",org:"UN OCHA",category:"Humanitarian",icon:"🆘",desc:"Humanitarian data platform with datasets on crises worldwide including food security, population movements, and needs.",url:"https://reliefweb.int/updates?type=dataset",access:"Free",region:"Global",tags:["humanitarian","crisis","UN"]},
+  {title:"WFP VAM Data",org:"UN WFP",category:"Humanitarian",icon:"🍞",desc:"World Food Programme Vulnerability Analysis and Mapping data on food security, nutrition, and market prices.",url:"https://dataviz.vam.wfp.org",access:"Free",region:"Global",tags:["food security","WFP","nutrition"]},
+  {title:"FAOSTAT",org:"FAO",category:"Humanitarian",icon:"🌾",desc:"Food and Agriculture Organization statistical database covering food supply, agriculture, trade, and food security for all countries.",url:"https://www.fao.org/faostat",access:"Free",region:"Global",tags:["food","agriculture","FAO"]},
+  {title:"INFORM Risk Index",org:"EU JRC",category:"Humanitarian",icon:"⚠️",desc:"Global, open-source risk assessment for humanitarian crises and disasters scoring 191 countries on hazard, vulnerability, and coping capacity.",url:"https://drmkc.jrc.ec.europa.eu/inform-index",access:"Free",region:"Global",tags:["risk","disaster","EU"]},
+  {title:"Ushahidi Data",org:"Ushahidi",category:"Humanitarian",icon:"📍",desc:"Open-source crisis mapping platform enabling real-time crowdsourced data collection during disasters and humanitarian crises.",url:"https://www.ushahidi.com",access:"Free",region:"Global",tags:["crisis mapping","crowdsourced","disaster"]},
+  {title:"UNHCR Microdata Library",org:"UNHCR",category:"Humanitarian",icon:"📊",desc:"Collection of survey datasets conducted by UNHCR covering refugee populations including demographic, socioeconomic, and protection data.",url:"https://microdata.unhcr.org",access:"Free",region:"Global",tags:["refugees","survey","microdata"]},
+
+  // ── ADDITIONAL DATABASES ──
+  {title:"Open Payments CMS",org:"CMS",category:"Health",icon:"💊",desc:"CMS Open Payments data tracking financial relationships between pharmaceutical companies and healthcare providers.",url:"https://openpaymentsdata.cms.gov",access:"Free",region:"USA",tags:["pharma","payments","CMS"]},
+  {title:"CDC BRFSS",org:"CDC",category:"Health",icon:"📋",desc:"Behavioral Risk Factor Surveillance System — nationwide survey of US residents on health-related risk behaviors and preventive services.",url:"https://www.cdc.gov/brfss/data_documentation",access:"Free",region:"USA",tags:["survey","behavioral","CDC"]},
+  {title:"Medicare Data",org:"CMS",category:"Health",icon:"🏥",desc:"Medicare claims data and enrollment information for 60M+ beneficiaries, including provider utilization and payment data.",url:"https://data.cms.gov",access:"Free",region:"USA",tags:["Medicare","claims","hospitals"]},
+  {title:"FBI Crime Data Explorer",org:"FBI",category:"Government",icon:"🚔",desc:"FBI's interactive crime data explorer with UCR data on violent crime, property crime, hate crimes, and arrests by jurisdiction.",url:"https://cde.ucr.cjis.gov",access:"Free",region:"USA",tags:["crime","FBI","law enforcement"]},
+  {title:"National Crime Records India",org:"NCRB India",category:"Government",icon:"📊",desc:"Crime in India statistics published annually by India's National Crime Records Bureau covering all categories of crime.",url:"https://ncrb.gov.in/crime-in-india-year-wise.html",access:"Free",region:"Asia",tags:["crime","india","statistics"]},
+  {title:"Global Peace Index",org:"Institute for Economics & Peace",category:"Social",icon:"☮️",desc:"Annual ranking of 163 countries by their level of peacefulness covering internal and external conflicts and societal safety.",url:"https://www.visionofhumanity.org/resources",access:"Free",region:"Global",tags:["peace","conflict","global"]},
+  {title:"Fragile States Index",org:"Fund for Peace",category:"Social",icon:"⚠️",desc:"Annual report ranking 179 countries based on state fragility, covering social, economic, and political indicators.",url:"https://fragilestatesindex.org/data",access:"Free",region:"Global",tags:["fragility","governance","risk"]},
+  {title:"Gender Inequality Data",org:"UNDP",category:"Social",icon:"♀️",desc:"UNDP's Gender Inequality Index and Gender Development Index measuring gender-based inequalities across 191 countries.",url:"https://hdr.undp.org/data-center/documentation-and-downloads",access:"Free",region:"Global",tags:["gender","inequality","UNDP"]},
+  {title:"Human Freedom Index",org:"Cato Institute",category:"Social",icon:"🗽",desc:"Comprehensive measure of personal, civil, and economic freedom across 165 countries using 76 distinct indicators.",url:"https://www.cato.org/human-freedom-index/2022",access:"Free",region:"Global",tags:["freedom","civil liberties","rankings"]},
+  {title:"Comparative Constitutions",org:"Univ. of Chicago",category:"Legal",icon:"📜",desc:"Database of 200+ years of constitutional data covering 194 countries and their constitutional texts, events, and characteristics.",url:"https://comparativeconstitutionsproject.org",access:"Free",region:"Global",tags:["constitution","law","governance"]},
+  {title:"Financial Action Task Force",org:"FATF",category:"Legal",icon:"🔍",desc:"FATF's data on anti-money laundering and counter-financing of terrorism measures across its 200-member jurisdictions.",url:"https://www.fatf-gafi.org/en/countries.html",access:"Free",region:"Intl",tags:["AML","compliance","financial crime"]},
+  {title:"Atlas of Economic Complexity",org:"Harvard Growth Lab",category:"Economics",icon:"🌐",desc:"Measures countries' economic complexity and productive knowledge, providing data on exports, imports, and product space.",url:"https://atlas.cid.harvard.edu",access:"Free",region:"Global",tags:["trade","exports","economic complexity"]},
+  {title:"Comtrade UN Trade",org:"UN Statistics",category:"Economics",icon:"🚢",desc:"UN Comtrade international merchandise trade statistics database — the world's most comprehensive trade data covering $19T+ in annual trade.",url:"https://comtradeplus.un.org",access:"Free",region:"Global",tags:["trade","imports","exports"]},
+  {title:"ILO Statistics",org:"International Labour Organization",category:"Economics",icon:"👷",desc:"ILOSTAT provides comprehensive labor statistics including employment, unemployment, wages, and working conditions globally.",url:"https://ilostat.ilo.org/data",access:"Free",region:"Global",tags:["labour","employment","wages"]},
+  {title:"GHDx Health Data",org:"IHME",category:"Health",icon:"🔬",desc:"Global Health Data Exchange — catalog of global health-related data with access to thousands of surveys and studies.",url:"https://ghdx.healthdata.org",access:"Free",region:"Global",tags:["health surveys","global","IHME"]},
+  {title:"TerraClimate",org:"Univ. of Idaho",category:"Environment",icon:"🌡️",desc:"Monthly climate and climatic water balance data for global terrestrial surfaces at high spatial resolution from 1958 to present.",url:"https://www.climatologylab.org/terraclimate.html",access:"Free",region:"Global",tags:["climate","temperature","water"]},
+  {title:"MODIS Land Data",org:"NASA",category:"Environment",icon:"🛰️",desc:"Moderate Resolution Imaging Spectroradiometer land data products covering vegetation, fire, snow cover, and land surface temperature.",url:"https://modis.gsfc.nasa.gov/data",access:"Free",region:"Global",tags:["satellite","land use","NASA"]},
+  {title:"Reef Check Data",org:"Reef Check",category:"Environment",icon:"🐠",desc:"Coral reef monitoring data from 100+ countries documenting coral cover, fish biomass, and invertebrate populations.",url:"https://www.reefcheck.org/data-center",access:"Free",region:"Global",tags:["coral","reef","ocean"]},
+  {title:"OpenAQ Archive",org:"OpenAQ",category:"Environment",icon:"💨",desc:"Historical air quality data spanning 15+ years from 10,000+ monitoring locations worldwide in a unified open format.",url:"https://openaq.org/data",access:"Free",region:"Global",tags:["air quality","PM2.5","pollution"]},
+  {title:"NY Times Article Archive",org:"NY Times",category:"Media",icon:"📰",desc:"NYT Article Search API providing access to 170+ years of NYT articles with metadata, abstracts, and multimedia.",url:"https://developer.nytimes.com/apis",access:"API",region:"USA",tags:["news","journalism","API"]},
+  {title:"NewsAPI",org:"NewsAPI",category:"Media",icon:"📡",desc:"Simple HTTP REST API for searching and retrieving live articles from 80,000 news sources and blogs worldwide.",url:"https://newsapi.org",access:"API",region:"Global",tags:["news","API","real-time"]},
+  {title:"DOAJ",org:"DOAJ",category:"Science",icon:"📄",desc:"Directory of Open Access Journals — a curated list of open access journals with metadata on 7+ million articles.",url:"https://doaj.org/data",access:"Free",region:"Global",tags:["journals","open access","research"]},
+  {title:"arXiv Dataset",org:"arXiv / Cornell",category:"Science",icon:"📐",desc:"Open access repository of 2M+ scientific papers in physics, math, CS, and more — with bulk metadata download available.",url:"https://arxiv.org/help/bulk_data",access:"Bulk",region:"USA",tags:["papers","preprints","science"]},
+  {title:"Crossref Metadata",org:"Crossref",category:"Science",icon:"🔗",desc:"Scholarly metadata for 155+ million academic works including DOIs, citations, funding info, and license data.",url:"https://www.crossref.org/services/metadata-retrieval",access:"API",region:"Global",tags:["metadata","citations","DOI"]},
+  {title:"Semantic Scholar",org:"Allen Institute for AI",category:"Science",icon:"🧠",desc:"Free AI-powered research tool with semantic search across 200M+ academic papers with citation graphs available.",url:"https://api.semanticscholar.org/graph/v1",access:"API",region:"USA",tags:["papers","AI","citations"]},
+  {title:"EarthChem Library",org:"NSF",category:"Science",icon:"🪨",desc:"Geochemical data repository for earth and planetary science including mineral chemistry, rock compositions, and isotopic data.",url:"https://earthchem.org/library",access:"Free",region:"USA",tags:["geochemistry","geology","minerals"]},
+  {title:"eBird Data",org:"Cornell Lab of Ornithology",category:"Science",icon:"🐦",desc:"Real-time, online bird checklist program providing bird observation data from 800 million+ submissions by birders worldwide.",url:"https://ebird.org/science/use-ebird-data",access:"Free",region:"Global",tags:["birds","biodiversity","citizen science"]},
+  {title:"iNaturalist",org:"California Academy of Sciences",category:"Science",icon:"🌿",desc:"Citizen science platform with 200M+ observations of wild plants and animals from 10M+ naturalists worldwide.",url:"https://www.inaturalist.org/observations/export",access:"Free",region:"Global",tags:["biodiversity","citizen science","species"]},
+  {title:"Open Food Facts",org:"Open Food Facts",category:"Health",icon:"🥦",desc:"Free, open, collaborative database of food products worldwide with nutrition facts, ingredients, labels, and allergen data.",url:"https://world.openfoodfacts.org/data",access:"Free",region:"Global",tags:["food","nutrition","ingredients"]},
+  {title:"Nutrient Data Laboratory",org:"USDA",category:"Health",icon:"🥗",desc:"USDA FoodData Central providing detailed nutritional information for thousands of foods including branded and generic items.",url:"https://fdc.nal.usda.gov",access:"API",region:"USA",tags:["nutrition","food","USDA"]},
+  {title:"DrugBank",org:"DrugBank Online",category:"Health",icon:"💊",desc:"Comprehensive drug database containing detailed drug data including clinical, chemical, pharmacological, and pharmaceutical data.",url:"https://go.drugbank.com/releases/latest",access:"Free",region:"Global",tags:["drugs","pharmacology","clinical"]},
+  {title:"ChEMBL",org:"EMBL-EBI",category:"Science",icon:"🧪",desc:"Manually curated database of bioactive molecules with drug-like properties for use in pharmaceutical research.",url:"https://www.ebi.ac.uk/chembl/data_access",access:"Free",region:"Europe",tags:["bioactive","chemistry","drugs"]},
+  {title:"PubMed Central",org:"NIH",category:"Health",icon:"📃",desc:"Free full-text archive of biomedical and life sciences journal literature from NIH with 9M+ articles available.",url:"https://www.ncbi.nlm.nih.gov/pmc/tools/bulk-ft-download",access:"Bulk",region:"USA",tags:["biomedical","journals","full-text"]},
+  {title:"Global Shark Attack File",org:"Shark Research Institute",category:"Science",icon:"🦈",desc:"Global database of shark attacks worldwide since 1845, including location, victim, activity, and injury severity.",url:"https://www.sharkattackfile.net",access:"Free",region:"Global",tags:["sharks","ocean","incidents"]},
+  {title:"Earthquake Catalog USGS",org:"USGS",category:"Science",icon:"🌋",desc:"Comprehensive earthquake catalog with real-time and historical data on all earthquakes globally with magnitude, location, and depth.",url:"https://earthquake.usgs.gov/fdsnws/event/1",access:"API",region:"Global",tags:["earthquakes","seismic","real-time"]},
+  {title:"NOAA Tides and Currents",org:"NOAA",category:"Environment",icon:"🌊",desc:"Water levels, tides, currents, salinity, and meteorological data from 3,000+ stations along US coasts and Great Lakes.",url:"https://tidesandcurrents.noaa.gov/api-helper",access:"API",region:"USA",tags:["tides","ocean","coastal"]},
+  {title:"Met Office Hadley Data",org:"UK Met Office",category:"Environment",icon:"🌡️",desc:"HadCRUT global temperature dataset — the primary source for tracking global surface temperature change over 170+ years.",url:"https://www.metoffice.gov.uk/hadobs/hadcrut5",access:"Free",region:"UK",tags:["temperature","climate","historical"]},
+  {title:"Sea Level Data",org:"PSMSL",category:"Environment",icon:"🌊",desc:"Permanent Service for Mean Sea Level — global data bank for long term sea level change information from 2,000+ stations.",url:"https://www.psmsl.org/data",access:"Free",region:"Global",tags:["sea level","ocean","climate change"]},
+  {title:"Snow and Ice Data Center",org:"NSIDC",category:"Environment",icon:"❄️",desc:"Cryosphere data including Arctic and Antarctic sea ice extent, glacier mass balance, and snow cover datasets.",url:"https://nsidc.org/data",access:"Free",region:"USA",tags:["ice","glaciers","Arctic"]},
+  {title:"AirNow API",org:"US EPA",category:"Environment",icon:"💨",desc:"Real-time air quality data from the US AirNow monitoring network providing AQI, PM2.5, PM10, and ozone data.",url:"https://docs.airnowapi.org",access:"API",region:"USA",tags:["air quality","AQI","EPA"]},
+  {title:"PRISM Climate Data",org:"Oregon State Univ.",category:"Environment",icon:"🌦️",desc:"High-quality gridded climate datasets for the US at 4km resolution covering temperature, precipitation, dew point, and VPD.",url:"https://prism.oregonstate.edu",access:"Free",region:"USA",tags:["climate","precipitation","gridded"]},
+  {title:"MapBox Elevation",org:"Mapbox",category:"Geospatial",icon:"⛰️",desc:"Terrain RGB tiles and elevation data from Mapbox allowing developers to query elevation at any point on Earth.",url:"https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-rgb-v1",access:"API",region:"Global",tags:["elevation","terrain","API"]},
+  {title:"HERE Open Map Data",org:"HERE Technologies",category:"Geospatial",icon:"📍",desc:"HERE's open map data platform providing road network, points of interest, and address data for global applications.",url:"https://platform.here.com/open-datasets",access:"Free",region:"Global",tags:["maps","roads","POI"]},
+  {title:"OpenAddresses",org:"OpenAddresses",category:"Geospatial",icon:"🏠",desc:"Global collection of address datasets from authoritative government sources — over 600 million addresses worldwide.",url:"https://openaddresses.io",access:"Free",region:"Global",tags:["addresses","geocoding","government"]},
+  {title:"Who's On First",org:"Geocode Earth",category:"Geospatial",icon:"🗺️",desc:"Open gazetteer of places including countries, regions, cities, neighbourhoods, and venues with stable IDs and geometries.",url:"https://whosonfirst.org/data",access:"Free",region:"Global",tags:["gazetteer","places","geocoding"]},
+  {title:"TIGER Shapefiles",org:"US Census",category:"Geospatial",icon:"🐯",desc:"Topologically Integrated Geographic Encoding and Referencing — legal boundaries, roads, and geographic features for the US.",url:"https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html",access:"Free",region:"USA",tags:["shapefiles","boundaries","USA"]},
+  {title:"Copernicus Land Data",org:"ESA",category:"Geospatial",icon:"🌿",desc:"European land monitoring services providing land cover, urban atlas, and pan-European geospatial datasets.",url:"https://land.copernicus.eu/en/downloads",access:"Free",region:"Europe",tags:["land cover","satellite","EU"]},
+  {title:"Open Data Cube",org:"ODC Community",category:"Geospatial",icon:"📦",desc:"Open source geospatial data management and analysis platform for satellite imagery and earth observation data.",url:"https://www.opendatacube.org",access:"Free",region:"Global",tags:["satellite","analysis","geospatial"]},
+  {title:"Socrata Open Data API",org:"Tyler Technologies",category:"Technology",icon:"🔌",desc:"Socrata's open data API powering hundreds of government open data portals with a uniform query interface.",url:"https://dev.socrata.com",access:"API",region:"Global",tags:["API","government","SODA"]},
+  {title:"ArcGIS Open Data",org:"Esri",category:"Geospatial",icon:"🗺️",desc:"Esri's open data portal aggregating thousands of public datasets from government and organizations in GIS formats.",url:"https://hub.arcgis.com/pages/open-data",access:"Free",region:"Global",tags:["GIS","Esri","spatial"]},
+  {title:"Global Risk Data Platform",org:"UNDRR / UNEP",category:"Humanitarian",icon:"🌪️",desc:"UN disaster risk reduction platform with data on natural hazards, vulnerability, and risk indicators for countries worldwide.",url:"https://preview.grid.unep.ch",access:"Free",region:"Global",tags:["disaster risk","hazards","UN"]},
+  {title:"EM-DAT Disaster Database",org:"CRED",category:"Humanitarian",icon:"🌊",desc:"International Disaster Database containing data on 22,000+ mass disasters worldwide since 1900 with casualties and economic losses.",url:"https://www.emdat.be",access:"Free",region:"Global",tags:["disasters","floods","earthquakes"]},
+  {title:"Global Terrorism Database",org:"START / Univ. Maryland",category:"Humanitarian",icon:"⚠️",desc:"Open-source database including information on 200,000+ domestic and international terrorist attacks from 1970 to 2020.",url:"https://www.start.umd.edu/gtd",access:"Free",region:"Global",tags:["terrorism","violence","incidents"]},
+  {title:"Open Data for Africa",org:"African Development Bank",category:"Economics",icon:"🌍",desc:"Statistical data portal for Africa covering 54 countries with socioeconomic statistics, MDGs, and development indicators.",url:"https://dataportal.opendataforafrica.org",access:"Free",region:"Global",tags:["africa","development","statistics"]},
+  {title:"Latin America Open Data",org:"ECLAC",category:"Economics",icon:"🌎",desc:"ECLAC's CEPALSTAT provides social and economic statistics for 33 Latin American and Caribbean countries.",url:"https://estadisticas.cepal.org/cepalstat",access:"Free",region:"Intl",tags:["latin america","economy","social"]},
+  {title:"AQICN Air Quality Data",org:"World AQI Project",category:"Environment",icon:"🌫️",desc:"Real-time air quality index data from 13,000+ monitoring stations worldwide with API access.",url:"https://aqicn.org/data-platform",access:"API",region:"Global",tags:["air quality","PM2.5","global"]},
+  {title:"OpenWeatherMap",org:"OpenWeather",category:"Environment",icon:"⛅",desc:"Current weather, forecasts, historical data, and weather alerts for any location with a widely-used free API.",url:"https://openweathermap.org/api",access:"API",region:"Global",tags:["weather","forecast","API"]},
+  {title:"meteostat",org:"Meteostat",category:"Environment",icon:"🌤️",desc:"Historical weather and climate data from 80,000 weather stations worldwide providing temperature, precipitation, and wind data.",url:"https://dev.meteostat.net",access:"API",region:"Global",tags:["historical","weather","stations"]},
+  {title:"Open Source Routing Machine",org:"Project OSRM",category:"Transport",icon:"🗺️",desc:"High-performance routing engine for OpenStreetMap data providing routing, distance matrices, and trip optimization.",url:"https://project-osrm.org",access:"API",region:"Global",tags:["routing","maps","OSM"]},
+  {title:"FlightAware",org:"FlightAware",category:"Transport",icon:"✈️",desc:"Flight tracking data providing historical flight data, airline schedules, and airport delay statistics via API.",url:"https://www.flightaware.com/commercial/aeroapi",access:"API",region:"Global",tags:["flights","aviation","tracking"]},
+  {title:"Transitland",org:"Interline Technologies",category:"Transport",icon:"🚌",desc:"Open transit data aggregator indexing GTFS feeds from 2,000+ transit operators worldwide with a feed registry.",url:"https://www.transit.land",access:"API",region:"Global",tags:["transit","GTFS","public transport"]},
+  {title:"Bike Share Research Data",org:"Univ. of California",category:"Transport",icon:"🚴",desc:"Academic dataset aggregating trip-level data from 40+ North American bike share systems for urban mobility research.",url:"https://bikeshare-research.org",access:"Free",region:"USA",tags:["cycling","urban mobility","research"]},
+  {title:"UK Companies House",org:"Companies House UK",category:"Legal",icon:"🏢",desc:"Free, searchable database of all UK registered companies including filings, officers, persons of significant control.",url:"https://www.gov.uk/government/organisations/companies-house",access:"Free",region:"UK",tags:["companies","UK","corporate"]},
+  {title:"Open Contracting Data",org:"OCP",category:"Legal",icon:"📝",desc:"Global open contracting partnership data standard and dataset covering government procurement in 50+ countries.",url:"https://www.open-contracting.org/data",access:"Free",region:"Global",tags:["procurement","government","contracts"]},
+  {title:"GovTrack US Congress",org:"Civic Impulse",category:"Legal",icon:"🏛️",desc:"Congressional voting records, bill status, committee activity, and member information for tracking US legislation.",url:"https://www.govtrack.us/developers",access:"API",region:"USA",tags:["congress","voting","legislation"]},
+  {title:"Legiscan",org:"LegiScan",category:"Legal",icon:"⚖️",desc:"National legislative tracking engine with data on bills, votes, and legislators from all 50 US states and Congress.",url:"https://legiscan.com/legiscan",access:"API",region:"USA",tags:["state legislation","voting","bills"]},
+  {title:"Data.mil",org:"US Department of Defense",category:"Government",icon:"🎖️",desc:"DoD's open data platform with declassified and public military datasets covering contracts, personnel, and facilities.",url:"https://www.data.mil",access:"Free",region:"USA",tags:["military","DoD","contracts"]},
+  {title:"USAspending.gov",org:"US Treasury",category:"Government",icon:"💰",desc:"Official source of US government spending data with federal contracts, grants, loans, and direct payments.",url:"https://www.usaspending.gov",access:"Free",region:"USA",tags:["spending","federal","contracts"]},
+  {title:"Recovery.gov / USASPENDING",org:"OMB",category:"Government",icon:"📊",desc:"Comprehensive data on US federal grants, contracts, loans including recipient details and award amounts.",url:"https://www.usaspending.gov/download_center",access:"Free",region:"USA",tags:["grants","spending","transparency"]},
+  {title:"Open Government India",org:"Data.gov.in",category:"Government",icon:"🇮🇳",desc:"Agriculture, housing, health and finance datasets from Indian states and central government ministries.",url:"https://data.gov.in/catalogs",access:"API",region:"Asia",tags:["india","government","agriculture"]},
+  {title:"Brazil Governo Aberto",org:"Brazilian Government",category:"Government",icon:"🇧🇷",desc:"Brazilian federal open data portal with datasets on public servants, budget, education, and health programs.",url:"https://dados.gov.br",access:"Free",region:"Intl",tags:["brazil","government","open data"]},
+  {title:"Kenya Open Data",org:"Government of Kenya",category:"Government",icon:"🇰🇪",desc:"Kenyan government's open data initiative providing socioeconomic, demographic, and developmental data.",url:"https://www.opendata.go.ke",access:"Free",region:"Global",tags:["kenya","africa","government"]},
+  {title:"Open Data South Africa",org:"SA Government",category:"Government",icon:"🇿🇦",desc:"South Africa's open data portal with datasets from government departments on economy, health, education, and justice.",url:"https://data.gov.za",access:"Free",region:"Global",tags:["south africa","africa","government"]},
+  {title:"Taiwan Open Government",org:"Government of Taiwan",category:"Government",icon:"🇹🇼",desc:"Taiwan's open government data platform with real-time data on air quality, transport, social welfare, and public finance.",url:"https://data.gov.tw/en",access:"API",region:"Asia",tags:["taiwan","government","real-time"]},
+  {title:"Socioeconomic High-Resolution Rural Urban Mapping (SHRUG)",org:"Development Data Lab",category:"Economics",icon:"🗺️",desc:"India socioeconomic data at granular geographic levels linking villages, towns, districts over multiple census periods.",url:"https://www.devdatalab.org/shrug",access:"Free",region:"Asia",tags:["india","rural","census"]},
+  {title:"PATSTAT Patent Data",org:"EPO",category:"Economics",icon:"📋",desc:"European Patent Office's worldwide patent statistical database covering 90+ million patent documents from 1978 to present.",url:"https://www.epo.org/en/searching-for-patents/business/patstat",access:"Free",region:"Europe",tags:["patents","innovation","EPO"]},
+  {title:"USPTO Patent Bulk Data",org:"USPTO",category:"Economics",icon:"🔐",desc:"US Patent and Trademark Office bulk downloads of US patent applications, grants, assignments, and maintenance fees.",url:"https://bulkdata.uspto.gov",access:"Bulk",region:"USA",tags:["patents","trademarks","USA"]},
+  {title:"Humanitarian Access Tracker",org:"ACAPS",category:"Humanitarian",icon:"🗺️",desc:"Crisis data providing real-time assessment of 35+ ongoing crises including access constraints, key facts, and humanitarian needs.",url:"https://www.acaps.org/en/thematics/all-topics",access:"Free",region:"Global",tags:["humanitarian","crisis","access"]},
+  {title:"WHO Mortality Database",org:"WHO",category:"Health",icon:"📊",desc:"WHO's global mortality data from civil registration systems covering causes of death coded by ICD for 120+ countries.",url:"https://platform.who.int/mortality",access:"Free",region:"Global",tags:["mortality","ICD","WHO"]},
+  {title:"Eora MRIO Database",org:"Univ. of Sydney",category:"Economics",icon:"🌐",desc:"Global multi-region input-output database quantifying carbon footprints and supply chains across 190 countries.",url:"https://www.worldmrio.com",access:"Free",region:"Global",tags:["input-output","supply chains","carbon"]},
+  {title:"WIPO IP Statistics",org:"WIPO",category:"Economics",icon:"💡",desc:"World Intellectual Property Organization statistics on patents, trademarks, industrial designs, and copyright globally.",url:"https://www.wipo.int/ipstats/en",access:"Free",region:"Intl",tags:["IP","patents","trademarks"]},
+  {title:"OpenCage Geocoding",org:"OpenCage",category:"Geospatial",icon:"📍",desc:"Forward and reverse geocoding API built on open data — converts coordinates to addresses and addresses to coordinates.",url:"https://opencagedata.com",access:"API",region:"Global",tags:["geocoding","addresses","API"]},
+  {title:"SkyTruth Alert System",org:"SkyTruth",category:"Environment",icon:"🛰️",desc:"Environmental watchdog using satellite imagery to detect oil spills, industrial pollution, and illegal environmental activities.",url:"https://alerts.skytruth.org",access:"Free",region:"Global",tags:["satellite","pollution","environmental"]},
+  {title:"IUCN Red List",org:"IUCN",category:"Science",icon:"🦁",desc:"World's most comprehensive inventory of threatened species — data on 150,000+ species with conservation status and population trends.",url:"https://www.iucnredlist.org/resources/grid",access:"Free",region:"Global",tags:["endangered species","conservation","biodiversity"]},
+  {title:"Map of Life",org:"Yale University",category:"Science",icon:"🗺️",desc:"A tool for exploring species ranges worldwide, combining expert range maps, survey data, and environmental models.",url:"https://mol.org/data",access:"Free",region:"Global",tags:["species ranges","biodiversity","GIS"]},
+  {title:"Open Energy Data Initiative",org:"US DOE",category:"Energy",icon:"⚡",desc:"DOE's open energy data initiative providing datasets on building energy, solar potential, wind resources, and grid data.",url:"https://data.openei.org",access:"Free",region:"USA",tags:["DOE","buildings","solar"]},
+  {title:"Electricity Maps",org:"Tomorrow.io",category:"Energy",icon:"🗺️",desc:"Live and historical carbon intensity of electricity production by country, updated in real-time from grid operators.",url:"https://app.electricitymaps.com/map",access:"API",region:"Global",tags:["electricity","carbon","real-time"]},
+  {title:"Open Power System Data",org:"OPSD",category:"Energy",icon:"⚡",desc:"Free and open platform of power system data covering conventional plants, renewables, weather, and load for European countries.",url:"https://open-power-system-data.org",access:"Free",region:"Europe",tags:["power systems","europe","renewables"]},
+  {title:"Frictionless Data Standards",org:"Open Knowledge Foundation",category:"Technology",icon:"📦",desc:"Open Knowledge Foundation's data standards and package registry promoting better data practices and interoperability.",url:"https://frictionlessdata.io/data",access:"Free",region:"Global",tags:["standards","interoperability","open data"]},
+  {title:"Data Commons",org:"Google",category:"Technology",icon:"🌐",desc:"Google's open knowledge repository aggregating public datasets from WHO, US Census, NOAA, and others in a unified API.",url:"https://datacommons.org",access:"API",region:"Global",tags:["knowledge graph","API","aggregated"]},
+  {title:"Open Data Watch",org:"ODW",category:"Technology",icon:"📊",desc:"Data quality and availability metrics on national statistical systems with ODIN scores for 187 countries.",url:"https://odin.opendatawatch.com",access:"Free",region:"Global",tags:["data quality","statistics","open data"]},
+  {title:"DataHub.io",org:"Datopian",category:"Technology",icon:"🗃️",desc:"Platform for finding, sharing and publishing data packages with curated essential datasets on countries, cities, and standards.",url:"https://datahub.io",access:"Free",region:"Global",tags:["data packages","standards","curated"]},
+  {title:"Linked Open Data Cloud",org:"LOD Community",category:"Technology",icon:"🔗",desc:"Diagram and resource for the linked open data cloud — interconnected open datasets in RDF format on the web.",url:"https://lod-cloud.net",access:"Free",region:"Global",tags:["linked data","RDF","semantic web"]},
+  {title:"Schema.org",org:"W3C Community",category:"Technology",icon:"📝",desc:"Collaborative community activity creating and maintaining schemas for structured data markup on internet web pages.",url:"https://schema.org",access:"Free",region:"Global",tags:["structured data","schema","semantic"]},
+
+  // ── MORE GOVERNMENT ──
+  {title:"Open Data Netherlands",org:"Dutch Government",category:"Government",icon:"🇳🇱",desc:"Dutch national open data portal with thousands of datasets from municipalities, provinces, and national ministries.",url:"https://data.overheid.nl/en",access:"Free",region:"Europe",tags:["netherlands","government","open data"]},
+  {title:"Statistics Norway SSB",org:"Statistics Norway",category:"Government",icon:"🇳🇴",desc:"Norway's central institution for producing official statistics on economy, society, and population.",url:"https://www.ssb.no/en/statbank",access:"Free",region:"Europe",tags:["norway","statistics","economy"]},
+  {title:"Sweden Open Data",org:"Swedish Government",category:"Government",icon:"🇸🇪",desc:"Sweden's national open data portal aggregating datasets from government agencies, municipalities, and regions.",url:"https://www.dataportal.se/en",access:"Free",region:"Europe",tags:["sweden","government","open data"]},
+  {title:"Swiss Open Government Data",org:"Swiss Confederation",category:"Government",icon:"🇨🇭",desc:"Switzerland's federal open data portal with datasets from federal offices covering statistics, geography, and administration.",url:"https://opendata.swiss/en",access:"Free",region:"Europe",tags:["switzerland","government","statistics"]},
+  {title:"Spain Datos.gob.es",org:"Spanish Government",category:"Government",icon:"🇪🇸",desc:"Spain's national open data catalogue aggregating over 50,000 datasets from state, regional, and local administrations.",url:"https://datos.gob.es/en",access:"Free",region:"Europe",tags:["spain","government","open data"]},
+  {title:"Italy Dati.gov.it",org:"Italian Government",category:"Government",icon:"🇮🇹",desc:"Italy's national open data portal with datasets from ministries, agencies, and regional administrations.",url:"https://www.dati.gov.it",access:"Free",region:"Europe",tags:["italy","government","open data"]},
+  {title:"Belgium Open Data",org:"Belgian Government",category:"Government",icon:"🇧🇪",desc:"Belgium's federal open data initiative providing datasets on economy, environment, statistics, and public services.",url:"https://data.gov.be/en",access:"Free",region:"Europe",tags:["belgium","government","federal"]},
+  {title:"New Zealand Data",org:"NZ Government",category:"Government",icon:"🥝",desc:"New Zealand's open data portal with government datasets on health, education, environment, and public services.",url:"https://www.data.govt.nz",access:"Free",region:"Asia",tags:["new zealand","government","pacific"]},
+  {title:"South Korea Open Data",org:"Korean Government",category:"Government",icon:"🇰🇷",desc:"Korea's official public data portal offering 70,000+ datasets from 850+ public institutions across all sectors.",url:"https://www.data.go.kr/en/index.do",access:"API",region:"Asia",tags:["korea","government","API"]},
+  {title:"Mexico Datos Abiertos",org:"Mexican Government",category:"Government",icon:"🇲🇽",desc:"Mexico's national open data portal with federal agency datasets on health, economy, security, and demographics.",url:"https://datos.gob.mx/en",access:"Free",region:"Intl",tags:["mexico","government","latin america"]},
+  {title:"Argentina Datos Abiertos",org:"Argentine Government",category:"Government",icon:"🇦🇷",desc:"Argentina's open data platform aggregating datasets from national ministries on economy, health, and public services.",url:"https://datos.gob.ar",access:"Free",region:"Intl",tags:["argentina","government","latin america"]},
+  {title:"Philippine Open Data",org:"Philippine Government",category:"Government",icon:"🇵🇭",desc:"Philippines' open data portal providing datasets from government agencies on population, economy, and social services.",url:"https://data.gov.ph",access:"Free",region:"Asia",tags:["philippines","government","southeast asia"]},
+  {title:"Thailand Open Government",org:"Thai Government",category:"Government",icon:"🇹🇭",desc:"Thailand's government open data platform with datasets from ministries on economy, social welfare, and natural resources.",url:"https://data.go.th/en",access:"Free",region:"Asia",tags:["thailand","government","southeast asia"]},
+  {title:"Denver Open Data",org:"City of Denver",category:"Government",icon:"🏔️",desc:"City and County of Denver open data portal covering crime, permits, 311 service requests, and city operations.",url:"https://www.denvergov.org/opendata",access:"Free",region:"USA",tags:["denver","city","crime"]},
+  {title:"Austin Open Data",org:"City of Austin",category:"Government",icon:"🤠",desc:"City of Austin's open data portal with datasets on crime, code compliance, permits, parks, and city services.",url:"https://data.austintexas.gov",access:"Free",region:"USA",tags:["austin","city","texas"]},
+
+  // ── MORE SCIENCE ──
+  {title:"Allen Brain Atlas",org:"Allen Institute",category:"Science",icon:"🧠",desc:"Comprehensive atlas of gene expression in the mouse and human brain, providing free access to neuroanatomical data.",url:"https://portal.brain-map.org",access:"Free",region:"USA",tags:["neuroscience","brain","genomics"]},
+  {title:"Human Cell Atlas",org:"HCA Consortium",category:"Science",icon:"🔬",desc:"Open reference map of all human cells providing single-cell genomics data for understanding cell types and states.",url:"https://www.humancellatlas.org/data-portal",access:"Free",region:"Global",tags:["genomics","cells","biology"]},
+  {title:"NASA Planetary Data System",org:"NASA",category:"Science",icon:"🪐",desc:"Archive of data from NASA planetary science missions including Mars rovers, Cassini, and New Horizons spacecraft.",url:"https://pds.nasa.gov",access:"Free",region:"USA",tags:["planetary","NASA","space"]},
+  {title:"Sloan Digital Sky Survey",org:"SDSS",category:"Science",icon:"🌌",desc:"Deep multi-color imaging and spectroscopy of millions of celestial objects — one of the most ambitious astronomical surveys.",url:"https://www.sdss.org/dr18/data_access",access:"Free",region:"USA",tags:["astronomy","galaxy","spectroscopy"]},
+  {title:"Reactome Pathway Database",org:"EMBL-EBI",category:"Science",icon:"🧬",desc:"Free, open-source, curated and peer-reviewed database of human biological pathways and processes.",url:"https://reactome.org/download-data",access:"Free",region:"Europe",tags:["biology","pathways","bioinformatics"]},
+  {title:"EBI Expression Atlas",org:"EMBL-EBI",category:"Science",icon:"📊",desc:"Open public repository of gene and protein expression data across species, tissues, and experimental conditions.",url:"https://www.ebi.ac.uk/gxa/download.html",access:"Free",region:"Europe",tags:["gene expression","biology","proteomics"]},
+  {title:"Antarctic Biodiversity",org:"SCAR",category:"Science",icon:"🐧",desc:"Scientific Committee on Antarctic Research database of biodiversity observations from Antarctica and the Southern Ocean.",url:"https://www.biodiversity.aq/data",access:"Free",region:"Global",tags:["antarctica","biodiversity","ocean"]},
+  {title:"TAIR Plant Database",org:"TAIR",category:"Science",icon:"🌱",desc:"The Arabidopsis Information Resource — genomic data for the model plant Arabidopsis thaliana including genome sequence and gene function.",url:"https://www.arabidopsis.org",access:"Free",region:"USA",tags:["plants","genomics","botany"]},
+  {title:"ClinVar",org:"NCBI",category:"Science",icon:"🧬",desc:"Archive of reports on relationships between human genomic variants and phenotypes with evidence supporting pathogenicity.",url:"https://www.ncbi.nlm.nih.gov/clinvar",access:"Free",region:"USA",tags:["variants","genomics","clinical"]},
+  {title:"Open Neuro",org:"Stanford University",category:"Science",icon:"🧠",desc:"Free and open platform for sharing neuroimaging data including MRI, fMRI, EEG, MEG, and PET datasets.",url:"https://openneuro.org",access:"Free",region:"USA",tags:["neuroimaging","MRI","fMRI"]},
+
+  // ── MORE HEALTH ──
+  {title:"Global Burden of Disease",org:"IHME",category:"Health",icon:"📊",desc:"Systematic, scientific effort to quantify the comparative magnitude of health loss due to diseases, injuries, and risk factors.",url:"https://vizhub.healthdata.org/gbd-results",access:"Free",region:"Global",tags:["disease burden","mortality","IHME"]},
+  {title:"WHO Immunization Data",org:"WHO",category:"Health",icon:"💉",desc:"WHO and UNICEF estimates of national immunization coverage for vaccines across 194 countries from 1980 to present.",url:"https://www.who.int/teams/immunization-vaccines-and-biologicals/immunization-analysis-and-insights/global-monitoring/immunization-coverage",access:"Free",region:"Global",tags:["vaccines","immunization","WHO"]},
+  {title:"GHO Indicators API",org:"WHO",category:"Health",icon:"📡",desc:"Programmatic access to WHO's health indicators database with 2,000+ health metrics for countries and regions.",url:"https://www.who.int/data/gho/info/gho-odata-api",access:"API",region:"Global",tags:["WHO","API","health metrics"]},
+  {title:"SIDRA Global Health",org:"Qatar Statistics Authority",category:"Health",icon:"🏥",desc:"Gulf region health statistics and open microdata covering Qatar and neighboring countries' health indicators.",url:"https://www.psa.gov.qa/en/qatarstat",access:"Free",region:"Asia",tags:["gulf","health","middle east"]},
+  {title:"CDC Wonder Natality",org:"CDC",category:"Health",icon:"👶",desc:"Birth data from the National Vital Statistics System including birth rates, fertility, and birth characteristics for the US.",url:"https://wonder.cdc.gov/natality.html",access:"Free",region:"USA",tags:["births","natality","fertility"]},
+  {title:"European Health Interview Survey",org:"Eurostat",category:"Health",icon:"🇪🇺",desc:"EU-wide survey on population health status, health determinants, and healthcare use across member states.",url:"https://ec.europa.eu/eurostat/web/microdata/european-health-interview-survey",access:"Free",region:"Europe",tags:["EU","survey","health status"]},
+
+  // ── MORE ECONOMICS ──
+  {title:"Global Financial Data",org:"World Bank",category:"Economics",icon:"💳",desc:"World Bank's financial sector data including bank lending rates, stock market capitalization, and financial access indicators.",url:"https://databank.worldbank.org/source/global-financial-development",access:"Free",region:"Global",tags:["finance","banking","markets"]},
+  {title:"IMF Balance of Payments",org:"IMF",category:"Economics",icon:"💱",desc:"IMF's Balance of Payments and International Investment Position data covering trade in goods, services, and financial accounts.",url:"https://data.imf.org/?sk=7a51304b-6426-40c0-83dd-ca473ca1fd52",access:"Free",region:"Global",tags:["balance of payments","trade","IMF"]},
+  {title:"Economist Intelligence Unit",org:"EIU",category:"Economics",icon:"📰",desc:"Country risk and economic data tracking political, economic, and business environment across 200 countries.",url:"https://www.eiu.com/n/solutions/country-data",access:"Free",region:"Global",tags:["country risk","economy","business"]},
+  {title:"Doing Business Archive",org:"World Bank",category:"Economics",icon:"🏭",desc:"Archived World Bank Doing Business data measuring regulatory burden for small and medium-sized firms across 190 economies.",url:"https://archive.doingbusiness.org/en/doingbusiness",access:"Free",region:"Global",tags:["business regulation","world bank","rankings"]},
+  {title:"Global Debt Database",org:"IMF",category:"Economics",icon:"💸",desc:"Comprehensive dataset of public and private debt covering 190 countries over nearly five decades.",url:"https://www.imf.org/en/Publications/WP/Issues/2018/05/14/Global-Debt-Database-Methodology-and-Sources-45838",access:"Free",region:"Global",tags:["debt","GDP","fiscal"]},
+  {title:"UN National Accounts",org:"UN Statistics Division",category:"Economics",icon:"📊",desc:"National accounts data from the UN covering GDP, gross capital formation, household consumption, and government expenditure.",url:"https://unstats.un.org/unsd/snaama",access:"Free",region:"Global",tags:["national accounts","GDP","UN"]},
+  {title:"Harvest Choice",org:"IFPRI",category:"Economics",icon:"🌾",desc:"Agriculture development data for sub-Saharan Africa and South Asia covering crop production, yields, and food systems.",url:"https://www.ifpri.org/dataset",access:"Free",region:"Global",tags:["agriculture","food","Africa"]},
+
+  // ── MORE ENVIRONMENT ──
+  {title:"Global Wildfire Information System",org:"EU JRC",category:"Environment",icon:"🔥",desc:"Near-real-time active fire and burned area data from satellite observations for global wildfire monitoring.",url:"https://gwis.jrc.ec.europa.eu",access:"Free",region:"Global",tags:["wildfires","fire","satellite"]},
+  {title:"AQUEDUCT Water Risk",org:"WRI",category:"Environment",icon:"💧",desc:"World Resources Institute's water risk mapping tool providing data on water stress, flooding, and drought globally.",url:"https://www.wri.org/data/aqueduct-water-risk-atlas",access:"Free",region:"Global",tags:["water risk","drought","floods"]},
+  {title:"Global Drought Observatory",org:"EU JRC",category:"Environment",icon:"🏜️",desc:"European Commission's drought monitoring system providing indicators and data on drought conditions globally.",url:"https://edo.jrc.ec.europa.eu",access:"Free",region:"Global",tags:["drought","water","EU"]},
+  {title:"WHYCOS Hydrological Data",org:"WMO",category:"Environment",icon:"🌊",desc:"World Hydrological Cycle Observing System data on river discharge, water levels, and sediment loads globally.",url:"https://www.whycos.org",access:"Free",region:"Global",tags:["hydrology","rivers","water"]},
+  {title:"International Best Track Archive",org:"NOAA",category:"Environment",icon:"🌀",desc:"NOAA's hurricane and tropical cyclone best track data covering all basins worldwide from 1842 to present.",url:"https://www.ncei.noaa.gov/products/international-best-track-archive",access:"Free",region:"Global",tags:["hurricanes","cyclones","storms"]},
+  {title:"Volcano Observatory Notices",org:"USGS/Smithsonian",category:"Environment",icon:"🌋",desc:"Global Volcanism Program database of 1,350+ volcanoes with eruption history, hazard notices, and monitoring data.",url:"https://volcano.si.edu",access:"Free",region:"Global",tags:["volcanoes","eruptions","geology"]},
+  {title:"SoilGrids",org:"ISRIC",category:"Environment",icon:"🌱",desc:"Global gridded soil information at 250m resolution covering soil texture, pH, organic carbon, and bulk density.",url:"https://soilgrids.org",access:"Free",region:"Global",tags:["soil","land","agriculture"]},
+  {title:"Global Mangrove Watch",org:"JAXA",category:"Environment",icon:"🌿",desc:"Satellite-based dataset tracking global mangrove extent and changes from 1996 to present at 25m resolution.",url:"https://www.globalmangrovewatch.org",access:"Free",region:"Global",tags:["mangroves","coastal","satellite"]},
+
+  // ── MORE GEOSPATIAL ──
+  {title:"GHSL Global Human Settlement",org:"EU JRC",category:"Geospatial",icon:"🏘️",desc:"EU's global human settlement layer providing data on population, built-up area, and urban centers at global scale.",url:"https://ghsl.jrc.ec.europa.eu/data.php",access:"Free",region:"Global",tags:["urban","population","built-up area"]},
+  {title:"WorldPop",org:"Univ. of Southampton",category:"Geospatial",icon:"👥",desc:"Open access archive of spatial demographic datasets for Central and South America, Africa, and Asia at 100m resolution.",url:"https://www.worldpop.org",access:"Free",region:"Global",tags:["population","demographics","gridded"]},
+  {title:"HRSL Facebook Population",org:"Meta / CIESIN",category:"Geospatial",icon:"📍",desc:"High-resolution settlement layer identifying inhabited areas globally using satellite imagery and census data at 30m.",url:"https://data.humdata.org/organization/facebook",access:"Free",region:"Global",tags:["population","settlements","AI"]},
+  {title:"OpenCelliD",org:"OpenCelliD",category:"Geospatial",icon:"📡",desc:"World's largest open database of cell towers with GPS coordinates, MCC, MNC, and signal strength data.",url:"https://opencellid.org",access:"Free",region:"Global",tags:["cell towers","telecom","location"]},
+  {title:"ESRI Living Atlas",org:"Esri",category:"Geospatial",icon:"🌍",desc:"Curated collection of global geographic information including basemaps, imagery, demographics, and real-time data layers.",url:"https://livingatlas.arcgis.com/en/home",access:"Free",region:"Global",tags:["GIS","basemaps","demographics"]},
+  {title:"UN SPIDER Data",org:"UN-SPIDER",category:"Geospatial",icon:"🛰️",desc:"UN Platform for Space-based Information for Disaster Management providing satellite data and geospatial resources.",url:"https://www.un-spider.org/links-and-resources/data-sources",access:"Free",region:"Global",tags:["disaster","satellite","UN"]},
+
+  // ── MORE TECHNOLOGY ──
+  {title:"Waymo Open Dataset",org:"Waymo",category:"Technology",icon:"🚗",desc:"Large-scale autonomous driving dataset with 1,950 segments of sensor data, 2D/3D bounding boxes, and camera data.",url:"https://waymo.com/open",access:"Free",region:"USA",tags:["autonomous driving","LiDAR","computer vision"]},
+  {title:"Open Images V7",org:"Google",category:"Technology",icon:"🖼️",desc:"Large-scale dataset with 9 million images annotated with labels, bounding boxes, segmentations, and visual relationships.",url:"https://storage.googleapis.com/openimages/web/index.html",access:"Free",region:"Global",tags:["computer vision","images","annotations"]},
+  {title:"LAION Datasets",org:"LAION",category:"Technology",icon:"🤖",desc:"Large-scale open AI datasets including LAION-5B with 5.8 billion image-text pairs used for training generative AI.",url:"https://laion.ai/blog/laion-5b",access:"Free",region:"Global",tags:["AI","image-text","training"]},
+  {title:"Common Voice",org:"Mozilla",category:"Technology",icon:"🎙️",desc:"Mozilla's massive open-source dataset of human voices with 30,000+ hours of speech in 100+ languages for ASR training.",url:"https://commonvoice.mozilla.org/en/datasets",access:"Free",region:"Global",tags:["speech","audio","NLP"]},
+  {title:"BookCorpus",org:"Univ. of Toronto",category:"Technology",icon:"📚",desc:"Large-scale text corpus of 11,000+ books used for training language models, covering fiction and non-fiction.",url:"https://huggingface.co/datasets/bookcorpus",access:"Free",region:"Global",tags:["NLP","text","language models"]},
+  {title:"VirusTotal",org:"Google",category:"Technology",icon:"🦠",desc:"Free file and URL analysis service aggregating threat intelligence from 70+ antivirus scanners and URL blocklists.",url:"https://www.virustotal.com/gui/stats",access:"API",region:"Global",tags:["security","malware","threat intel"]},
+  {title:"Shodan CVE Data",org:"Shodan",category:"Technology",icon:"🔐",desc:"Common Vulnerabilities and Exposures data tracking known security flaws in software and hardware systems.",url:"https://cveproject.github.io",access:"Free",region:"Global",tags:["CVE","security","vulnerabilities"]},
+  {title:"MITRE ATT&CK",org:"MITRE",category:"Technology",icon:"🛡️",desc:"Globally-accessible knowledge base of adversary tactics and techniques based on real-world cyberattack observations.",url:"https://attack.mitre.org",access:"Free",region:"USA",tags:["cybersecurity","tactics","threat"]},
+
+  // ── MORE SOCIAL ──
+  {title:"World Values Survey",org:"WVS Association",category:"Social",icon:"🌍",desc:"Global research project exploring people's values and beliefs, how they change over time, and their social and political impact across 100 countries.",url:"https://www.worldvaluessurvey.org/WVSDocumentationWV7.jsp",access:"Free",region:"Global",tags:["values","survey","cross-cultural"]},
+  {title:"Afrobarometer Data",org:"Afrobarometer",category:"Social",icon:"🌍",desc:"Pan-African survey research network measuring social, political, and economic attitudes in Africa across 40 countries.",url:"https://www.afrobarometer.org/data",access:"Free",region:"Global",tags:["africa","survey","politics"]},
+  {title:"Latinobarometro",org:"Corporación Latinobarómetro",category:"Social",icon:"🌎",desc:"Public opinion survey in Latin America measuring democratic attitudes, economic assessments, and social values across 18 countries.",url:"https://www.latinobarometro.org/lat.jsp",access:"Free",region:"Intl",tags:["latin america","survey","opinion"]},
+  {title:"Arab Barometer",org:"Arab Barometer",category:"Social",icon:"🌙",desc:"Independent research network providing data on social, political, and economic attitudes across the Arab world.",url:"https://www.arabbarometer.org/survey-data",access:"Free",region:"Asia",tags:["arab world","survey","politics"]},
+  {title:"Eurobarometer",org:"European Commission",category:"Social",icon:"🇪🇺",desc:"Series of public opinion surveys conducted on behalf of the European Commission tracking EU citizens' attitudes.",url:"https://europa.eu/eurobarometer/surveys/browse",access:"Free",region:"Europe",tags:["EU","opinion","survey"]},
+  {title:"Open Government Partnership",org:"OGP",category:"Social",icon:"🤝",desc:"Dataset of government commitments on transparency, accountability, and civic participation from 75+ member countries.",url:"https://www.opengovpartnership.org/data",access:"Free",region:"Global",tags:["governance","transparency","commitments"]},
+
+  // ── MORE EDUCATION ──
+  {title:"PIRLS Data",org:"IEA",category:"Education",icon:"📖",desc:"Progress in International Reading Literacy Study — data on reading literacy of students in 60+ countries at grade 4.",url:"https://pirls2021.org/data",access:"Free",region:"Global",tags:["reading","literacy","students"]},
+  {title:"OECD Education at a Glance",org:"OECD",category:"Education",icon:"🎓",desc:"Annual OECD report with key education indicators covering enrollment, graduation, teaching staff, and expenditure.",url:"https://www.oecd.org/education/education-at-a-glance",access:"Free",region:"Intl",tags:["OECD","graduation","expenditure"]},
+  {title:"Global Education Monitoring",org:"UNESCO",category:"Education",icon:"📚",desc:"UNESCO's annual report tracking progress toward SDG4 education goals with data on access, quality, and equity.",url:"https://www.unesco.org/gem-report/en/gemreport/data",access:"Free",region:"Global",tags:["SDG4","equity","UNESCO"]},
+
+  // ── MORE LEGAL ──
+  {title:"Open States",org:"Open States Project",category:"Legal",icon:"🗺️",desc:"Database tracking state legislative data across all 50 US states including bills, votes, legislators, and committees.",url:"https://openstates.org/data",access:"Free",region:"USA",tags:["state legislation","bills","USA"]},
+  {title:"Comparative Manifesto Project",org:"WZB Berlin",category:"Legal",icon:"📋",desc:"Comparative data on political parties' policy positions as measured from election manifestos in 50+ countries since 1945.",url:"https://manifesto-project.wzb.eu/datasets",access:"Free",region:"Global",tags:["political parties","manifestos","elections"]},
+  {title:"Varieties of Party Identity",org:"V-Party / V-Dem",category:"Legal",icon:"🗳️",desc:"Dataset on party characteristics including ideology, populism, anti-pluralism, and political attitudes for 1,000+ parties.",url:"https://www.v-dem.net/data/v-party-dataset",access:"Free",region:"Global",tags:["parties","populism","ideology"]},
+  {title:"Global Inventory Illicit Flows",org:"UNODC",category:"Legal",icon:"🚫",desc:"UNODC data on illicit financial flows, drug trafficking, money laundering typologies, and organized crime indicators.",url:"https://data.unodc.org/",access:"Free",region:"Global",tags:["crime","trafficking","AML"]},
+
+  // ── MORE HUMANITARIAN ──
+  {title:"IDPs Internal Displacement",org:"IDMC",category:"Humanitarian",icon:"🏕️",desc:"Internal Displacement Monitoring Centre data on people displaced within their own countries due to conflict and disasters.",url:"https://www.internal-displacement.org/database/displacement-data",access:"Free",region:"Global",tags:["displacement","IDP","conflict"]},
+  {title:"Nutrition Cluster Data",org:"UN OCHA",category:"Humanitarian",icon:"🍼",desc:"Global nutrition data from the Humanitarian Data Exchange covering acute malnutrition rates and food security by country.",url:"https://data.humdata.org/group/nutrition",access:"Free",region:"Global",tags:["nutrition","malnutrition","humanitarian"]},
+  {title:"ACAPS Crisis Data",org:"ACAPS",category:"Humanitarian",icon:"🔴",desc:"Independent data from the Assessment Capacities Project on humanitarian needs, severity, and access in 30+ crises.",url:"https://www.acaps.org/en/data",access:"Free",region:"Global",tags:["crisis","needs assessment","humanitarian"]},
+
+  // ── MORE ENERGY ──
+  {title:"RE Atlas DOE",org:"US DOE NREL",category:"Energy",icon:"☀️",desc:"National Renewable Energy Lab's energy resource atlas with wind, solar, geothermal, and biomass potential data.",url:"https://maps.nrel.gov/re-atlas",access:"Free",region:"USA",tags:["renewable","solar","NREL"]},
+  {title:"Global Solar Atlas",org:"World Bank / Solargis",category:"Energy",icon:"🌞",desc:"Solar resource data for any location on Earth including global horizontal irradiance and photovoltaic power potential.",url:"https://globalsolaratlas.info/download",access:"Free",region:"Global",tags:["solar","irradiance","renewable"]},
+  {title:"Global Wind Atlas",org:"World Bank / DTU",category:"Energy",icon:"💨",desc:"Free wind resource data at 250m resolution covering wind speed, power density, and capacity factor globally.",url:"https://globalwindatlas.info/en/download/datasets",access:"Free",region:"Global",tags:["wind","renewable","energy"]},
+  {title:"EIA MECS Survey",org:"US EIA",category:"Energy",icon:"🏭",desc:"Manufacturing Energy Consumption Survey providing data on energy use by US manufacturers including fuels and electricity.",url:"https://www.eia.gov/consumption/manufacturing",access:"Free",region:"USA",tags:["manufacturing","energy use","industry"]},
+
+  // ── MORE MEDIA ──
+  {title:"Newspaper Navigator",org:"Library of Congress",category:"Media",icon:"🗞️",desc:"Dataset of 1.5 million photos extracted from Library of Congress historic newspaper pages using machine learning.",url:"https://news-navigator.labs.loc.gov",access:"Free",region:"USA",tags:["newspapers","historic","images"]},
+  {title:"Chronicling America",org:"Library of Congress",category:"Media",icon:"📜",desc:"Historic American newspapers digitized and made freely searchable, covering 1770-1963 with full-text API access.",url:"https://chroniclingamerica.loc.gov/about/api",access:"API",region:"USA",tags:["newspapers","historic","text"]},
+  {title:"GDELT Television",org:"GDELT",category:"Media",icon:"📺",desc:"GDELT's television news data tracking visual and spoken content from US television news broadcasts since 2009.",url:"https://blog.gdeltproject.org/gdelt-television-api",access:"API",region:"USA",tags:["TV","news","broadcast"]},
+  {title:"Metacritic Data",org:"Metacritic/Fandom",category:"Media",icon:"🎮",desc:"Aggregated critic and user review scores for movies, games, TV shows, and music in machine-readable formats.",url:"https://www.metacritic.com",access:"Free",region:"Global",tags:["reviews","ratings","entertainment"]},
+];
+
+// State
+let activeCategories = new Set();
+let activeAccess = new Set();
+let activeRegions = new Set();
+let searchQuery = '';
+let currentSort = 'az';
+
+const categories = [...new Set(DATABASES.map(d => d.category))].sort();
+
+// Build category dropdown
+const catPanel = document.getElementById('panel-dd-category');
+categories.forEach(cat => {
+  const label = document.createElement('label');
+  label.innerHTML = `<input type="checkbox" value="${cat}" onchange="applyFilters()"> <span class="cb-box">✓</span> ${cat}`;
+  catPanel.appendChild(label);
+});
+
+// Build category pills
+function buildCatPills() {
+  const container = document.getElementById('catPills');
+  const allPill = document.createElement('button');
+  allPill.className = 'cat-pill active';
+  allPill.id = 'pill-all';
+  allPill.innerHTML = 'All <span class="count">' + DATABASES.length + '</span>';
+  allPill.onclick = () => { activeCategories.clear(); updateCatPills(); applyFilters(); };
+  container.appendChild(allPill);
+
+  categories.forEach(cat => {
+    const count = DATABASES.filter(d => d.category === cat).length;
+    const pill = document.createElement('button');
+    pill.className = 'cat-pill';
+    pill.id = 'pill-' + cat;
+    pill.innerHTML = `${getCatIcon(cat)} ${cat} <span class="count">${count}</span>`;
+    pill.onclick = () => { toggleCategory(cat); };
+    container.appendChild(pill);
+  });
+}
+
+function getCatIcon(cat) {
+  const icons = { Government:'🏛️', Science:'🔬', Health:'🏥', Economics:'📈', Environment:'🌿', Technology:'💻', Social:'👥', Geospatial:'🗺️', Education:'🎓', Transport:'✈️', Energy:'⚡', Legal:'⚖️', Media:'📰', Humanitarian:'🆘' };
+  return icons[cat] || '📊';
+}
+
+function toggleCategory(cat) {
+  if (activeCategories.has(cat)) activeCategories.delete(cat);
+  else activeCategories.add(cat);
+  updateCatPills();
+  applyFilters();
+}
+
+function updateCatPills() {
+  document.getElementById('pill-all').classList.toggle('active', activeCategories.size === 0);
+  categories.forEach(cat => {
+    const pill = document.getElementById('pill-' + cat);
+    if (pill) pill.classList.toggle('active', activeCategories.has(cat));
+  });
+}
+
+function toggleDropdown(id) {
+  document.querySelectorAll('.dropdown-panel').forEach(p => {
+    if (p.id !== 'panel-' + id) { p.classList.remove('open'); p.closest('.dropdown-wrap')?.querySelector('.dropdown-btn')?.classList.remove('active'); }
+  });
+  const panel = document.getElementById('panel-' + id);
+  const btn = document.querySelector('#' + id + ' .dropdown-btn');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown-wrap')) {
+    document.querySelectorAll('.dropdown-panel').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.dropdown-btn').forEach(b => b.classList.remove('active'));
+  }
+});
+
+function applyFilters() {
+  // Collect checkbox states
+  activeAccess = new Set([...document.querySelectorAll('#panel-dd-access input:checked')].map(i => i.value));
+  activeRegions = new Set([...document.querySelectorAll('#panel-dd-region input:checked')].map(i => i.value));
+  activeCategories = new Set([...document.querySelectorAll('#panel-dd-category input:checked')].map(i => i.value));
+  updateCatPills();
+  renderFilterTags();
+  renderGrid();
+}
+
+function renderFilterTags() {
+  const container = document.getElementById('filterTags');
+  container.innerHTML = '';
+  [...activeCategories, ...activeAccess, ...activeRegions].forEach(tag => {
+    const el = document.createElement('div');
+    el.className = 'filter-tag';
+    el.innerHTML = `${tag} <span class="remove" onclick="removeFilter('${tag}')">×</span>`;
+    container.appendChild(el);
+  });
+}
+
+function removeFilter(val) {
+  document.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    if (cb.value === val) cb.checked = false;
+  });
+  applyFilters();
+}
+
+function clearAll() {
+  document.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+  document.getElementById('searchInput').value = '';
+  searchQuery = '';
+  activeCategories.clear();
+  activeAccess.clear();
+  activeRegions.clear();
+  updateCatPills();
+  renderFilterTags();
+  renderGrid();
+}
+
+function setSort(s) {
+  currentSort = s;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + s).classList.add('active');
+  renderGrid();
+}
+
+function getFiltered() {
+  let data = [...DATABASES];
+  const q = searchQuery.toLowerCase();
+
+  if (q) data = data.filter(d =>
+    d.title.toLowerCase().includes(q) ||
+    d.org.toLowerCase().includes(q) ||
+    d.desc.toLowerCase().includes(q) ||
+    d.category.toLowerCase().includes(q) ||
+    d.tags.some(t => t.toLowerCase().includes(q))
+  );
+
+  if (activeCategories.size > 0) data = data.filter(d => activeCategories.has(d.category));
+  if (activeAccess.size > 0) data = data.filter(d => activeAccess.has(d.access));
+  if (activeRegions.size > 0) data = data.filter(d => activeRegions.has(d.region));
+
+  if (currentSort === 'az') data.sort((a, b) => a.title.localeCompare(b.title));
+  else data.sort((a, b) => a.category.localeCompare(b.category) || a.title.localeCompare(b.title));
+
+  return data;
+}
+
+function getCatClass(cat) {
+  return 'cat-' + cat.toLowerCase();
+}
+
+function getBadgeClass(access) {
+  if (access === 'Free') return 'badge-free';
+  if (access === 'API') return 'badge-api';
+  return 'badge-bulk';
+}
+
+function renderGrid() {
+  const data = getFiltered();
+  const grid = document.getElementById('grid');
+  document.getElementById('shownCount').textContent = data.length;
+  document.getElementById('totalCount2').textContent = DATABASES.length;
+
+  if (data.length === 0) {
+    grid.innerHTML = '<div class="empty"><h2>No databases found</h2><p>Try adjusting your search or filters.</p></div>';
+    return;
+  }
+
+  grid.innerHTML = data.map((d, i) => `
+    <div class="card ${getCatClass(d.category)}" style="animation-delay:${Math.min(i,30)*0.03}s">
+      <div class="card-head">
+        <div class="card-icon icon-${d.category.toLowerCase()}">${d.icon}</div>
+        <div class="card-title-group">
+          <div class="card-title" title="${d.title}">${d.title}</div>
+          <div class="card-org">${d.org}</div>
+        </div>
+        <span class="card-badge ${getBadgeClass(d.access)}">${d.access}</span>
+      </div>
+      <div class="card-desc">${d.desc}</div>
+      <div class="card-footer">
+        <div class="card-tags">
+          <span class="tag">${d.category}</span>
+          ${d.tags.slice(0,2).map(t => `<span class="tag">${t}</span>`).join('')}
+        </div>
+        <a class="card-link" href="${d.url}" target="_blank" rel="noopener">Visit ↗</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Search
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value;
+  renderGrid();
+});
+
+// Init
+document.getElementById('totalCount').textContent = DATABASES.length;
+document.getElementById('catCount').textContent = categories.length;
+buildCatPills();
+renderGrid();
+</script>
+
+</div><!-- /#appContent -->
+
+<!-- Firebase SDK (compat — no bundler needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script>
+// ── Firebase init ──────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyAD2MMzwwpq7h_IDJx1qKsZdqXtOQnpY3k",
+  authDomain:        "opendatagateway-b500e.firebaseapp.com",
+  projectId:         "opendatagateway-b500e",
+  storageBucket:     "opendatagateway-b500e.firebasestorage.app",
+  messagingSenderId: "1098557507226",
+  appId:             "1:1098557507226:web:0e32785dabd664aa8c4123",
+  measurementId:     "G-GZ64N2TFCE"
+};
+firebase.initializeApp(firebaseConfig);
+const auth           = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+// Auth uses signInWithPopup — no redirect result to handle
+
+// ── Update header UI with signed-in user ──────────────────────────────────
+function updateUserUI(user) {
+  var gate         = document.getElementById('authGate');
+  var appContent   = document.getElementById('appContent');
+  var signInBtn    = document.getElementById('signInBtn');
+  var userMenuWrap = document.getElementById('userMenuWrap');
+
+  gate.style.display       = 'none';
+  appContent.style.display = 'block';
+  setAuthLoading(false);
+
+  // Use displayName — NEVER fall back to email for the display name
+  var name  = (user.displayName && user.displayName.trim()) ? user.displayName.trim() : 'User';
+  var email = user.email || '';
+  var photo = user.photoURL;
+
+  signInBtn.style.display    = 'none';
+  userMenuWrap.style.display = 'flex';
+
+  document.getElementById('userDisplayName').textContent = name.split(' ')[0];
+  document.getElementById('dropdownName').textContent    = name;
+  document.getElementById('dropdownEmail').textContent   = email;
+
+  var avatarImg         = document.getElementById('userAvatarImg');
+  var avatarPlaceholder = document.getElementById('userAvatarPlaceholder');
+  if (photo) {
+    avatarImg.src                   = photo;
+    avatarImg.style.display         = 'block';
+    avatarPlaceholder.style.display = 'none';
+  } else {
+    avatarImg.style.display         = 'none';
+    avatarPlaceholder.style.display = 'flex';
+    avatarPlaceholder.textContent   = name.charAt(0).toUpperCase();
+  }
+}
+
+// ── Auth state: gate or show app ───────────────────────────────────────────
+auth.onAuthStateChanged(function(user) {
+  if (user) {
+    // For email/password sign-UP, updateUserUI is called directly after
+    // updateProfile() so the name is already set. For all other cases
+    // (Google, returning users, email sign-in) we call it here.
+    updateUserUI(user);
+  } else {
+    var gate         = document.getElementById('authGate');
+    var appContent   = document.getElementById('appContent');
+    var signInBtn    = document.getElementById('signInBtn');
+    var userMenuWrap = document.getElementById('userMenuWrap');
+
+    gate.style.display         = 'flex';
+    appContent.style.display   = 'none';
+    signInBtn.style.display    = 'flex';
+    userMenuWrap.style.display = 'none';
+    setAuthLoading(false);
+  }
+});
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tabSignIn').classList.toggle('active', tab === 'signin');
+  document.getElementById('tabSignUp').classList.toggle('active', tab === 'signup');
+  document.getElementById('panelSignIn').style.display = tab === 'signin' ? '' : 'none';
+  document.getElementById('panelSignUp').style.display = tab === 'signup' ? '' : 'none';
+  hideAuthError();
+}
+
+// ── Google auth ───────────────────────────────────────────────────────────
+function handleGoogleAuth() {
+  hideAuthError();
+
+  // file:// protocol cannot run Firebase auth at all — must be served over http/https
+  if (window.location.protocol === 'file:') {
+    showAuthError(
+      'You are opening this file directly from your computer (file://). ' +
+      'Please serve it over http/https. ' +
+      'For local testing run: npx serve . — or just deploy to GitHub Pages / Vercel.'
+    );
+    return;
+  }
+
+  setAuthLoading(true);
+  auth.signInWithPopup(googleProvider)
+    .catch(function(err) {
+      setAuthLoading(false);
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        showAuthError('Sign-in cancelled. Please try again.');
+      } else if (err.code === 'auth/popup-blocked') {
+        showAuthError('Pop-up blocked. Please allow pop-ups for this site and try again.');
+      } else if (err.code === 'auth/network-request-failed') {
+        showAuthError('Network error. Check your internet connection and try again.');
+      } else if (err.code === 'auth/unauthorized-domain') {
+        showAuthError('This domain is not authorised in Firebase. Add it under Authentication → Settings → Authorized domains in your Firebase console.');
+      } else {
+        showAuthError('Google sign-in failed: ' + err.message);
+      }
+    });
+}
+
+// ── Email sign-in ──────────────────────────────────────────────────────────
+function handleEmailSignIn() {
+  hideAuthError();
+
+  if (window.location.protocol === 'file:') {
+    showAuthError('Open this file via http/https — run: npx serve . — or deploy to GitHub Pages / Vercel.');
+    return;
+  }
+
+  var email    = document.getElementById('siEmail').value.trim();
+  var password = document.getElementById('siPassword').value;
+
+  if (!email || !password) {
+    showAuthError('Please enter your email and password.');
+    return;
+  }
+
+  setAuthLoading(true);
+  auth.signInWithEmailAndPassword(email, password)
+    .then(function() {
+      // onAuthStateChanged handles the rest
+    })
+    .catch(function(err) {
+      setAuthLoading(false);
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        showAuthError('Incorrect email or password. Please try again.');
+      } else if (err.code === 'auth/invalid-email') {
+        showAuthError('Please enter a valid email address.');
+      } else if (err.code === 'auth/user-disabled') {
+        showAuthError('This account has been disabled. Contact support.');
+      } else if (err.code === 'auth/too-many-requests') {
+        showAuthError('Too many failed attempts. Please wait a moment and try again.');
+      } else {
+        showAuthError('Sign-in failed: ' + err.message);
+      }
+    });
+}
+
+// ── Email sign-up ──────────────────────────────────────────────────────────
+function handleEmailSignUp() {
+  hideAuthError();
+
+  if (window.location.protocol === 'file:') {
+    showAuthError('Open this file via http/https — run: npx serve . — or deploy to GitHub Pages / Vercel.');
+    return;
+  }
+
+  var name     = document.getElementById('suName').value.trim();
+  var email    = document.getElementById('suEmail').value.trim();
+  var password = document.getElementById('suPassword').value;
+
+  if (!name) {
+    showAuthError('Please enter your full name.');
+    return;
+  }
+  if (!email) {
+    showAuthError('Please enter your email address.');
+    return;
+  }
+  if (!password || password.length < 6) {
+    showAuthError('Password must be at least 6 characters.');
+    return;
+  }
+
+  setAuthLoading(true);
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(function(result) {
+      // Update profile FIRST, then manually trigger the UI update
+      return result.user.updateProfile({ displayName: name }).then(function() {
+        // Force UI refresh with the now-updated user object
+        updateUserUI(result.user);
+      });
+    })
+    .catch(function(err) {
+      setAuthLoading(false);
+      if (err.code === 'auth/email-already-in-use') {
+        showAuthError('An account with this email already exists. Sign in instead.');
+      } else if (err.code === 'auth/invalid-email') {
+        showAuthError('Please enter a valid email address.');
+      } else if (err.code === 'auth/weak-password') {
+        showAuthError('Password is too weak. Use at least 6 characters.');
+      } else {
+        showAuthError('Sign-up failed: ' + err.message);
+      }
+    });
+}
+
+// ── Sign out ───────────────────────────────────────────────────────────────
+function signOutUser() {
+  document.getElementById('userDropdown').classList.remove('open');
+  auth.signOut().catch(function(e) { console.error('Sign-out error:', e); });
+}
+
+// ── User dropdown ──────────────────────────────────────────────────────────
+function toggleUserMenu() {
+  document.getElementById('userDropdown').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  var wrap = document.getElementById('userMenuWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('userDropdown').classList.remove('open');
+  }
+});
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function setAuthLoading(show) {
+  document.getElementById('authLoading').classList.toggle('show', show);
+  var btns = ['googleSignInBtn', 'googleSignUpBtn'];
+  btns.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.disabled = show; el.style.opacity = show ? '0.6' : ''; }
+  });
+}
+function showAuthError(msg) {
+  var el = document.getElementById('authError');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function hideAuthError() {
+  var el = document.getElementById('authError');
+  if (el) el.classList.remove('show');
+}
+
+// Allow Enter key on password fields
+document.addEventListener('DOMContentLoaded', function() {
+  var siPwd = document.getElementById('siPassword');
+  var suPwd = document.getElementById('suPassword');
+  if (siPwd) siPwd.addEventListener('keydown', function(e){ if(e.key==='Enter') handleEmailSignIn(); });
+  if (suPwd) suPwd.addEventListener('keydown', function(e){ if(e.key==='Enter') handleEmailSignUp(); });
+  var siEmail = document.getElementById('siEmail');
+  if (siEmail) siEmail.addEventListener('keydown', function(e){ if(e.key==='Enter') handleEmailSignIn(); });
+  var suEmail = document.getElementById('suEmail');
+  if (suEmail) suEmail.addEventListener('keydown', function(e){ if(e.key==='Enter') handleEmailSignUp(); });
+});
+</script>
+</body>
+</html>
